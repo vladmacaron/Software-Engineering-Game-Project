@@ -66,9 +66,13 @@ public class MainClient {
 
 		// parse the parameters, otherwise the automatic evaluation will not work on
 		// http://swe1.wst.univie.ac.at
-		String serverBaseUrl = args[1];
-		String gameId = args[2];
+		//String serverBaseUrl = args[1];
+		//String gameId = args[2];
+		
+		String serverBaseUrl = "http://swe1.wst.univie.ac.at";
+		String gameId = "Jv25o";
 
+		
 		// template WebClient configuration, will be reused/customized for each
 		// individual endpoint
 		// TIP: create it once in the CTOR of your network class and subsequently use it
@@ -90,12 +94,12 @@ public class MainClient {
 		 * able to determine and assign related bonus points. No, we will not assign
 		 * them manually if you fail to do so.
 		 */
-		PlayerRegistration playerReg = new PlayerRegistration("YourFirtName", "YourLastName",
-				"Your_Real_UniView_u:account_userid");
+		PlayerRegistration playerReg = new PlayerRegistration("Vladislav", "Mazurov",
+				"vladislavm95");
 		Mono<ResponseEnvelope> webAccess = baseWebClient.method(HttpMethod.POST).uri("/" + gameId + "/players")
 				.body(BodyInserters.fromValue(playerReg)) // specify the data which is sent to the server
 				.retrieve().bodyToMono(ResponseEnvelope.class); // specify the object returned by the server
-
+		
 		// WebClient support asynchronous message exchange. In SE1 we use a synchronous
 		// one for the sake of simplicity. So calling block is fine.
 		ResponseEnvelope<UniquePlayerIdentifier> resultReg = webAccess.block();
