@@ -1,18 +1,33 @@
 package client.model;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.HashMap;
 import java.util.Objects;
 
 public class Map {
 	
+	private final PropertyChangeSupport changes = new PropertyChangeSupport(this);
 	private HashMap<Coordinates, MapObject> mapFields;
 
 	public Map(HashMap<Coordinates, MapObject> mapFields) {
 		super();
 		this.mapFields = mapFields;
 	}
+	
+	public void addPropertyChangeListener(PropertyChangeListener listener) {
+		//enables to register new listeners
+		changes.addPropertyChangeListener(listener);
+	}
+	
+	public void setMap(Map map) {
+		Map beforeChange = new Map(this.getMapFields());
+		this.mapFields = map.getMapFields();
+		
+		changes.firePropertyChange("map", beforeChange, map);
+	}
 
-	public HashMap<Coordinates, MapObject> getMapField() {
+	public HashMap<Coordinates, MapObject> getMapFields() {
 		return mapFields;
 	}
 
