@@ -5,28 +5,28 @@ import java.util.Objects;
 
 public class Map {
 	
-	private HashMap<Coordinates, MapObject> mapField;
+	private HashMap<Coordinates, MapObject> mapFields;
 
-	public Map(HashMap<Coordinates, MapObject> mapField) {
+	public Map(HashMap<Coordinates, MapObject> mapFields) {
 		super();
-		this.mapField = mapField;
+		this.mapFields = mapFields;
 	}
 
 	public HashMap<Coordinates, MapObject> getMapField() {
-		return mapField;
+		return mapFields;
 	}
 
-	public void setMapField(HashMap<Coordinates, MapObject> mapField) {
-		this.mapField = mapField;
+	public void setMapField(HashMap<Coordinates, MapObject> mapFields) {
+		this.mapFields = mapFields;
 	}
 	
 	public void addObjectOnMapField(Coordinates coordinates, ObjectType object) {
-		mapField.get(coordinates).addObjectOnField(object);
+		mapFields.get(coordinates).addObjectOnField(object);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(mapField);
+		return Objects.hash(mapFields);
 	}
 
 	@Override
@@ -38,7 +38,7 @@ public class Map {
 		if (getClass() != obj.getClass())
 			return false;
 		Map other = (Map) obj;
-		return Objects.equals(mapField, other.mapField);
+		return Objects.equals(mapFields, other.mapFields);
 	}
 	
 	
