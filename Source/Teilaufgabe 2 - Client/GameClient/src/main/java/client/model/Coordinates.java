@@ -19,6 +19,9 @@ public class Coordinates {
 	public int getY() {
 		return y;
 	}
+	
+	//TODO
+	//public findNeighbors()
 
 	@Override
 	public int hashCode() {
