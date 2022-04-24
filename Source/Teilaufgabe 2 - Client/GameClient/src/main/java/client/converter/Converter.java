@@ -19,7 +19,7 @@ public class Converter {
 	public HalfMap convertToHalfMap(String playerID, Map playerMap) {
 		List<HalfMapNode> halfMapNodes = new ArrayList<>();
 		
-		for (HashMap.Entry<Coordinates, MapObject> field : playerMap.getMapField().entrySet()) {
+		for (HashMap.Entry<Coordinates, MapObject> field : playerMap.getMapFields().entrySet()) {
 			ETerrain terrain = convertToETerrain(field.getValue().getTerrainType()); 
 			halfMapNodes.add(new HalfMapNode(field.getKey().getX(), field.getKey().getY(), terrain));
 		}

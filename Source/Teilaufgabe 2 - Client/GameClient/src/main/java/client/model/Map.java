@@ -38,6 +38,26 @@ public class Map {
 	public void addObjectOnMapField(Coordinates coordinates, ObjectType object) {
 		mapFields.get(coordinates).addObjectOnField(object);
 	}
+	
+	public int getMaxRow() {
+		Coordinates maxKey = null;
+        for (Coordinates key : mapFields.keySet()) {
+            if (maxKey == null || key.getY() > maxKey.getY()) {
+                maxKey = key;
+            }
+        }
+        return maxKey.getY();
+	}
+	
+	public int getMaxColumn() {
+		Coordinates maxKey = null;
+        for (Coordinates key : mapFields.keySet()) {
+            if (maxKey == null || key.getX() > maxKey.getX()) {
+                maxKey = key;
+            }
+        }
+        return maxKey.getX();
+	}
 
 	@Override
 	public int hashCode() {
