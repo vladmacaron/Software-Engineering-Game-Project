@@ -15,6 +15,10 @@ public class Map {
 		this.mapFields = mapFields;
 	}
 	
+	public Map() {
+		this.mapFields = new HashMap<Coordinates, MapObject>();
+	}
+
 	public void addPropertyChangeListener(PropertyChangeListener listener) {
 		//enables to register new listeners
 		changes.addPropertyChangeListener(listener);
@@ -37,6 +41,10 @@ public class Map {
 	
 	public void addObjectOnMapField(Coordinates coordinates, ObjectType object) {
 		mapFields.get(coordinates).addObjectOnField(object);
+	}
+	
+	public MapObject getMapObject(Coordinates coord) {
+		return mapFields.get(coord);
 	}
 	
 	public int getMaxRow() {

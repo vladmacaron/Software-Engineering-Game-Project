@@ -29,26 +29,36 @@ public class Converter {
 	}
 	
 	public ETerrain convertToETerrain(TerrainType terrainType) {
-		if(terrainType.equals(TerrainType.GRASS)) {
+		
+		switch(terrainType) {
+		case GRASS:
 			return ETerrain.Grass;
-		} else if(terrainType.equals(TerrainType.MOUNTAIN)) {
+		case MOUNTAIN:
 			return ETerrain.Mountain;
-		} else {
-			return ETerrain.Water;
+		case WATER:
+			return ETerrain.Mountain;
+		default:
+			//add exception
+			return ETerrain.Grass;
 		}
+		
 	}
 	
 	public PlayerMove convertToPlayerMove(String playerID, MovementType movementType) {
-		if(movementType.equals(MovementType.UP)) {
-			return PlayerMove.of(playerID, EMove.Up);
-		} else if(movementType.equals(MovementType.DOWN)) {
+		
+		switch(movementType) {
+		case DOWN:
 			return PlayerMove.of(playerID, EMove.Down);
-		} else if(movementType.equals(MovementType.LEFT)) {
+		case LEFT:
 			return PlayerMove.of(playerID, EMove.Left);
-		} else if(movementType.equals(MovementType.RIGHT)) {
+		case RIGHT:
 			return PlayerMove.of(playerID, EMove.Right);
-		} else {
+		case UP:
+			return PlayerMove.of(playerID, EMove.Up);
+		default:
+			//add exception
 			return new PlayerMove();
 		}
+		
 	}
 }

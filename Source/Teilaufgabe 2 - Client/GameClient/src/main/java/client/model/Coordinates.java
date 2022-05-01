@@ -1,5 +1,7 @@
 package client.model;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public class Coordinates {
@@ -20,8 +22,17 @@ public class Coordinates {
 		return y;
 	}
 	
-	//TODO
-	//public findNeighbors()
+	public List<Coordinates> getNeighbours(int x, int y) {
+		final int minX = 0, minY = 0, maxX = 7, maxY = 3;
+		List<Coordinates> neighbors = new ArrayList<Coordinates>(8);
+			for (int i = Math.max(x - 1, minX); i <= Math.min(x + 1, maxX); i++)
+			   for (int j = Math.max(y - 1, minY); j <= Math.min(y + 1, maxY); j++) {
+				   if (i == x && j == y)
+					   continue;
+				   neighbors.add(new Coordinates(i, j));
+		}
+		return neighbors;
+	}
 
 	@Override
 	public int hashCode() {
