@@ -12,7 +12,7 @@ import client.model.TerrainType;
 public class GameView {
 	public static final String GREEN_BACKGROUND = "\u001B[42m";
 	public static final String BLUE_BACKGROUND = "\u001B[44m";
-	public static final String GREY_BACKGROUND = "\u001B[250m";
+	public static final String GREY_BACKGROUND = "\u001B[200m";
 	public static final String COLOR_RESET = "\u001B[0m";
 	
 	private Map gameMap;
@@ -34,16 +34,15 @@ public class GameView {
 		}	
 	};
 	
-	private void printCurrentMap(Map gameMap) {
+	public void printCurrentMap(Map gameMap) {
 		for(int y = 0; y < gameMap.getMaxRow(); y++) {
-			System.out.print("--------------------------------------------------------------");
 			for(int x = 0; x < gameMap.getMaxColumn(); x++) {
-				System.out.print("|");
 				MapObject mapObject = gameMap.getMapObject(new Coordinates(x, y));
 				
 				printTerrain(mapObject.getTerrainType());
 				mapObject.getObjectsOnField().forEach((object) -> printObject(object));
-				
+				System.out.print("...");
+				System.out.print(COLOR_RESET);
 				//System.out.print("|");
 			}
 			System.out.println("");

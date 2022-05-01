@@ -1,5 +1,7 @@
 package client.main;
 
+import java.util.concurrent.TimeUnit;
+
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
@@ -11,6 +13,10 @@ import MessagesBase.UniquePlayerIdentifier;
 import MessagesBase.MessagesFromClient.ERequestState;
 import MessagesBase.MessagesFromClient.PlayerRegistration;
 import MessagesBase.MessagesFromServer.GameState;
+import client.converter.Converter;
+import client.mapcreator.MapCreator;
+import client.model.Map;
+import client.network.Network;
 import reactor.core.publisher.Mono;
 
 public class MainClient {
@@ -70,18 +76,45 @@ public class MainClient {
 		//String gameId = args[2];
 		
 		String serverBaseUrl = "http://swe1.wst.univie.ac.at";
-		String gameId = "Jv25o";
+		String gameID = "pOY85";
 
+		Network network1 = new Network(gameID, serverBaseUrl);
+		network1.registerPlayer("Vladislav", "Mazurov", "vladislavm95");
+		
+		Network network2 = new Network(gameID, serverBaseUrl);
+		network2.registerPlayer("Test", "Test", "vladislavm95");
+		
+		try
+		{
+		    Thread.sleep(1000);
+		}
+		catch(InterruptedException ex)
+		{
+		    Thread.currentThread().interrupt();
+		}
+		
+		Map playerMap1 = MapCreator.createPlayerMap();
+		Map playerMap2 = MapCreator.createPlayerMap();
+		network1.sendHalfMap(playerMap1);
+		network2.sendHalfMap(playerMap2);
+		
+		
+		
+		
+		
+		
+		
+		
 		
 		// template WebClient configuration, will be reused/customized for each
 		// individual endpoint
 		// TIP: create it once in the CTOR of your network class and subsequently use it
 		// in each communication method
-		WebClient baseWebClient = WebClient.builder().baseUrl(serverBaseUrl + "/games")
+		/*WebClient baseWebClient = WebClient.builder().baseUrl(serverBaseUrl + "/games")
 				.defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_XML_VALUE) // the network protocol uses
 																							// XML
 				.defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_XML_VALUE).build();
-
+*/
 		/*
 		 * Note, EACH client must only register a SINGLE player (i.e., you) ONCE! It is
 		 * OK, if you hard code your private data in your code. Here, this example shows
@@ -94,32 +127,32 @@ public class MainClient {
 		 * able to determine and assign related bonus points. No, we will not assign
 		 * them manually if you fail to do so.
 		 */
-		PlayerRegistration playerReg = new PlayerRegistration("Vladislav", "Mazurov",
-				"vladislavm95");
-		Mono<ResponseEnvelope> webAccess = baseWebClient.method(HttpMethod.POST).uri("/" + gameId + "/players")
-				.body(BodyInserters.fromValue(playerReg)) // specify the data which is sent to the server
-				.retrieve().bodyToMono(ResponseEnvelope.class); // specify the object returned by the server
+		//PlayerRegistration playerReg = new PlayerRegistration("Vladislav", "Mazurov",
+		//		"vladislavm95");
+		//Mono<ResponseEnvelope> webAccess = baseWebClient.method(HttpMethod.POST).uri("/" + gameId + "/players")
+		//		.body(BodyInserters.fromValue(playerReg)) // specify the data which is sent to the server
+		//		.retrieve().bodyToMono(ResponseEnvelope.class); // specify the object returned by the server
 		
 		// WebClient support asynchronous message exchange. In SE1 we use a synchronous
 		// one for the sake of simplicity. So calling block is fine.
-		ResponseEnvelope<UniquePlayerIdentifier> resultReg = webAccess.block();
+		//ResponseEnvelope<UniquePlayerIdentifier> resultReg = webAccess.block();
 
 		// always check for errors, and if some are reported, at least print them to the
 		// console (logging should always be preferred!)
 		// so that you become aware of them during debugging! The provided server gives
 		// you constructive error messages.
-		if (resultReg.getState() == ERequestState.Error) {
+		//if (resultReg.getState() == ERequestState.Error) {
 			// typically happens if you forgot to create a new game before the client
 			// execution or
 			// forgot to adapt the run configuration so that it supplies the id of the new
 			// game to the client
 			// open http://swe1.wst.univie.ac.at:18235/games in your browser to create a new
 			// game and obtain its game id
-			System.err.println("Client error, errormessage: " + resultReg.getExceptionMessage());
-		} else {
-			UniquePlayerIdentifier uniqueID = resultReg.getData().get();
-			System.out.println("My Player ID: " + uniqueID.getUniquePlayerID());
-		}
+		//	System.err.println("Client error, errormessage: " + resultReg.getExceptionMessage());
+		//} else {
+		//	UniquePlayerIdentifier uniqueID = resultReg.getData().get();
+		//	System.out.println("My Player ID: " + uniqueID.getUniquePlayerID());
+		//}
 
 		/*
 		 * TIP: Check out the network protocol documentation. It shows you with a nice
@@ -158,7 +191,8 @@ public class MainClient {
 	 * integrate this properly into their Client logic - and subsequently struggled
 	 * with the automatic evaluation.
 	 */
-	public static void exampleForGetRequests() throws Exception {
+	
+	/*public static void exampleForGetRequests() throws Exception {
 		// you will need to fill the variables with the appropriate information
 		String baseUrl = "UseValueFromARGS_1 FROM main";
 		String gameId = "UseValueFromARGS_2 FROM main";
@@ -191,5 +225,5 @@ public class MainClient {
 		if (requestResult.getState() == ERequestState.Error) {
 			System.err.println("Client error, errormessage: " + requestResult.getExceptionMessage());
 		}
-	}
+	}*/
 }

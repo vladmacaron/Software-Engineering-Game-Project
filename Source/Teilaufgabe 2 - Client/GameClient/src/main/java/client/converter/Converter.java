@@ -13,22 +13,29 @@ import client.model.Coordinates;
 import client.model.Map;
 import client.model.MapObject;
 import client.model.MovementType;
+import client.model.ObjectType;
 import client.model.TerrainType;
 
 public class Converter {
-	public HalfMap convertToHalfMap(String playerID, Map playerMap) {
+	public static HalfMap convertToHalfMap(String playerID, Map playerMap) {
 		List<HalfMapNode> halfMapNodes = new ArrayList<>();
 		
+		//Boolean check = true;
 		for (HashMap.Entry<Coordinates, MapObject> field : playerMap.getMapFields().entrySet()) {
-			ETerrain terrain = convertToETerrain(field.getValue().getTerrainType()); 
-			halfMapNodes.add(new HalfMapNode(field.getKey().getX(), field.getKey().getY(), terrain));
+			ETerrain terrain = convertToETerrain(field.getValue().getTerrainType());
+			
+			if(field.getValue().getObjectsOnField().contains(ObjectType.CASTLE)) {
+				halfMapNodes.add(new HalfMapNode(field.getKey().getX(), field.getKey().getY(), true, terrain));
+			} else {
+				halfMapNodes.add(new HalfMapNode(field.getKey().getX(), field.getKey().getY(), terrain));
+			}
 		}
 		
 		HalfMap halfMap = new HalfMap(playerID, halfMapNodes);
 		return halfMap;
 	}
 	
-	public ETerrain convertToETerrain(TerrainType terrainType) {
+	public static ETerrain convertToETerrain(TerrainType terrainType) {
 		
 		switch(terrainType) {
 		case GRASS:
@@ -36,7 +43,7 @@ public class Converter {
 		case MOUNTAIN:
 			return ETerrain.Mountain;
 		case WATER:
-			return ETerrain.Mountain;
+			return ETerrain.Water;
 		default:
 			//add exception
 			return ETerrain.Grass;
@@ -44,7 +51,7 @@ public class Converter {
 		
 	}
 	
-	public PlayerMove convertToPlayerMove(String playerID, MovementType movementType) {
+	public static PlayerMove convertToPlayerMove(String playerID, MovementType movementType) {
 		
 		switch(movementType) {
 		case DOWN:

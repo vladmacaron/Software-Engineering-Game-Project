@@ -15,6 +15,9 @@ import MessagesBase.MessagesFromClient.HalfMap;
 import MessagesBase.MessagesFromClient.PlayerMove;
 import MessagesBase.MessagesFromClient.PlayerRegistration;
 import MessagesBase.MessagesFromServer.GameState;
+import client.converter.Converter;
+import client.model.Map;
+import client.view.GameView;
 import reactor.core.publisher.Mono;
 
 public class Network {
@@ -24,10 +27,9 @@ public class Network {
 	private String playerID;
 	private String baseURL;
 	
-	public Network(String gameID, String playerID, String baseURL) {
+	public Network(String gameID, String baseURL) {
 		super();
 		this.gameID = gameID;
-		this.playerID = playerID;
 		this.baseURL = baseURL;
 		
 		baseWebClient = WebClient.builder().baseUrl(baseURL + "/games")
@@ -60,11 +62,16 @@ public class Network {
 		} else {
 			UniquePlayerIdentifier uniqueID = resultReg.getData().get();
 			playerID = uniqueID.getUniquePlayerID();
-			//System.out.println("My Player ID: " + uniqueID.getUniquePlayerID());
+			System.out.println("My Player ID: " + uniqueID.getUniquePlayerID());
 		}
 	}
 	
-	public void sendHalfMap(HalfMap halfMap) {
+	public void sendHalfMap(Map playerMap) {
+		HalfMap halfMap = Converter.convertToHalfMap(playerID, playerMap);
+		
+		GameView view = new GameView(playerMap);
+		view.printCurrentMap(playerMap);
+		
 		Mono<ResponseEnvelope> webAccess = baseWebClient.method(HttpMethod.POST)
 				.uri("/" + gameID + "/halfmaps")
 				.body(BodyInserters.fromValue(halfMap))
@@ -74,7 +81,7 @@ public class Network {
 		ResponseEnvelope resultReg = webAccess.block();
 		
 		if (resultReg.getState() == ERequestState.Error) {
-			System.err.println("Client error, errormessage: " + resultReg.getExceptionMessage());
+			System.err.println("Client error sending Map, errormessage: " + resultReg.getExceptionMessage());
 		} else {
 			System.err.println("Client has sent HalfMap successfully");
 		}

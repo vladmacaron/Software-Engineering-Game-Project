@@ -54,7 +54,7 @@ public class Map {
                 maxKey = key;
             }
         }
-        return maxKey.getY();
+        return maxKey.getY()+1;
 	}
 	
 	public int getMaxColumn() {
@@ -64,7 +64,7 @@ public class Map {
                 maxKey = key;
             }
         }
-        return maxKey.getX();
+        return maxKey.getX()+1;
 	}
 
 	@Override
