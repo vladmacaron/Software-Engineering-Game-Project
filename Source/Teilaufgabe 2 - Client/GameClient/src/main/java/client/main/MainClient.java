@@ -76,13 +76,13 @@ public class MainClient {
 		//String gameId = args[2];
 		
 		String serverBaseUrl = "http://swe1.wst.univie.ac.at";
-		String gameID = "pOY85";
+		String gameID = "Lab3o";
 
-		Network network1 = new Network(gameID, serverBaseUrl);
-		network1.registerPlayer("Vladislav", "Mazurov", "vladislavm95");
+		Network network = new Network(gameID, serverBaseUrl);
+		network.registerPlayer("Vladislav", "Mazurov", "vladislavm95");
 		
-		Network network2 = new Network(gameID, serverBaseUrl);
-		network2.registerPlayer("Test", "Test", "vladislavm95");
+		//Network network2 = new Network(gameID, serverBaseUrl);
+		network.registerPlayer("Test", "Test", "vladislavm95");
 		
 		try
 		{
@@ -93,10 +93,31 @@ public class MainClient {
 		    Thread.currentThread().interrupt();
 		}
 		
-		Map playerMap1 = MapCreator.createPlayerMap();
-		Map playerMap2 = MapCreator.createPlayerMap();
-		network1.sendHalfMap(playerMap1);
-		network2.sendHalfMap(playerMap2);
+		Map playerMap1 = new Map();
+		
+		do {
+			playerMap1 = MapCreator.createPlayerMap();
+		} while (!MapCreator.validateMap(playerMap1));
+		
+		Map playerMap2 = new Map();
+		
+		do {
+			playerMap2 = MapCreator.createPlayerMap();
+		} while (!MapCreator.validateMap(playerMap2));
+		
+		
+		network.sendHalfMap(playerMap1);
+		
+		try
+		{
+		    Thread.sleep(1000);
+		}
+		catch(InterruptedException ex)
+		{
+		    Thread.currentThread().interrupt();
+		}
+		
+		network.sendHalfMap(playerMap2);
 		
 		
 		

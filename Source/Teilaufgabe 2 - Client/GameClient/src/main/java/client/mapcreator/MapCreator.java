@@ -14,9 +14,12 @@ import client.model.TerrainType;
 
 public class MapCreator {
 	
+	static final int MAX_Y = 4;
+	static final int MAX_X = 8;
+	
 	public static Map createPlayerMap() {
-		final int MAX_Y = 4;
-		final int MAX_X = 8;
+		//final int MAX_Y = 4;
+		//final int MAX_X = 8;
 	
 		HashMap<Coordinates, MapObject> fields = new HashMap();
 		
@@ -45,11 +48,15 @@ public class MapCreator {
 		}
 		
 		Random rand = new Random();
-		Coordinates castleCoord = new Coordinates(rand.nextInt(MAX_X), rand.nextInt(MAX_Y));
-		System.out.println("X: " + castleCoord.getX() + " Y: " + castleCoord.getY());
+		int randX = rand.nextInt(MAX_X);
+		int randY = rand.nextInt(MAX_Y);
+		Coordinates castleCoord = new Coordinates(randX, randY);
+		//System.out.println("X: " + castleCoord.getX() + " Y: " + castleCoord.getY());
 		
 		while(!fields.get(castleCoord).getTerrainType().equals(TerrainType.GRASS)) {
-			castleCoord = new Coordinates(rand.nextInt(MAX_X+1), rand.nextInt(MAX_Y+1));
+			randX = rand.nextInt(MAX_X);
+			randY = rand.nextInt(MAX_Y);
+			castleCoord = new Coordinates(randX, randY);
 		}
 		
 		if(fields.get(castleCoord).getTerrainType().equals(TerrainType.GRASS)) {
@@ -59,16 +66,79 @@ public class MapCreator {
 		return new Map(fields);
 	}
 	
-	public static boolean validateMap() {
-		return checkIsland() && checkBorders();
+	public static boolean validateMap(Map playerMap) {
+		return checkIsland(playerMap) && checkBorders(playerMap);
 	}
 	
-	private static boolean checkIsland() {
+	private static boolean checkIsland(Map playerMap) {
+		HashMap<Coordinates, MapObject> fields = playerMap.getMapFields();
 		
+		if(!checkCorners(playerMap, new Coordinates(0,0))) {
+			return false;
+		}
+		if(!checkCorners(playerMap, new Coordinates(7,0))) {
+			return false;
+		}
+		if(!checkCorners(playerMap, new Coordinates(0,3))) {
+			return false;
+		}
+		if(!checkCorners(playerMap, new Coordinates(7,3))) {
+			return false;
+		}
+		
+		for(int y = 0; y<MAX_Y; y++) {
+			for(int x = 0; x<MAX_X; x++) {
+				int countWater = 0;
+				Coordinates cornerCoord = new Coordinates(x,y);
+				for(Coordinates neighbour : cornerCoord.getNeighbours()) {
+					if(fields.get(neighbour).getTerrainType().equals(TerrainType.WATER)) {
+						countWater++;
+					}
+				}
+				if(countWater>2) {
+					return false;
+				}
+			}
+		}
+		
+		return true;
 	}
 	
-	private static boolean checkBorders() {
+	private static boolean checkCorners(Map playerMap, Coordinates cornerCoord) {
+		HashMap<Coordinates, MapObject> fields = playerMap.getMapFields();
 		
+		int countWater = 0;
+		for(Coordinates neighbour : cornerCoord.getNeighbours()) {
+			if(fields.get(neighbour).getTerrainType().equals(TerrainType.WATER)) {
+				countWater++;
+			}
+		}
+		
+		return !(countWater>1);
+	}
+	
+	private static boolean checkBorders(Map playerMap) {
+		HashMap<Coordinates, MapObject> fields = playerMap.getMapFields();
+		int countLongSide = 0, countShortSide = 0;
+		for(int x=0; x<MAX_X; x++) {
+			if(fields.get(new Coordinates(x, 0)).getTerrainType().equals(TerrainType.WATER)) {
+				countLongSide++;
+			}
+			if(fields.get(new Coordinates(x, 3)).getTerrainType().equals(TerrainType.WATER)) {
+				countLongSide++;
+			}
+		}
+		
+		for(int y=0; y<MAX_Y; y++) {
+			if(fields.get(new Coordinates(0, y)).getTerrainType().equals(TerrainType.WATER)) {
+				countShortSide++;
+			}
+			if(fields.get(new Coordinates(7, y)).getTerrainType().equals(TerrainType.WATER)) {
+				countShortSide++;
+			}
+		}
+		
+		return !(countLongSide>3 || countShortSide>1);
 	}
 	
 }
