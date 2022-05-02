@@ -37,7 +37,7 @@ public class Network {
 				.defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_XML_VALUE).build();
 	}
 	
-	public void registerPlayer(String name, String surname, String uspace) {
+	public String registerPlayer(String name, String surname, String uspace) {
 		PlayerRegistration registration = new PlayerRegistration(name, surname, uspace);
 		
 		Mono<ResponseEnvelope> webAccess = baseWebClient.method(HttpMethod.POST)
@@ -59,18 +59,17 @@ public class Network {
 			// open http://swe1.wst.univie.ac.at:18235/games in your browser to create a new
 			// game and obtain its game id
 			System.err.println("Client error, errormessage: " + resultReg.getExceptionMessage());
+			return "";
 		} else {
 			UniquePlayerIdentifier uniqueID = resultReg.getData().get();
 			playerID = uniqueID.getUniquePlayerID();
 			System.out.println("My Player ID: " + uniqueID.getUniquePlayerID());
+			return playerID;
 		}
 	}
 	
 	public void sendHalfMap(Map playerMap) {
 		HalfMap halfMap = Converter.convertToHalfMap(playerID, playerMap);
-		
-		GameView view = new GameView(playerMap);
-		view.printCurrentMap(playerMap);
 		
 		Mono<ResponseEnvelope> webAccess = baseWebClient.method(HttpMethod.POST)
 				.uri("/" + gameID + "/halfmaps")
@@ -88,7 +87,7 @@ public class Network {
 	}
 	
 	public Optional<GameState> getGameState() {
-		Mono<ResponseEnvelope> webAccess = baseWebClient.method(HttpMethod.POST)
+		Mono<ResponseEnvelope> webAccess = baseWebClient.method(HttpMethod.GET)
 				.uri("/" + gameID + "/states/" + playerID)
 				.retrieve()
 				.bodyToMono(ResponseEnvelope.class);
@@ -100,10 +99,15 @@ public class Network {
 			return Optional.empty();
 		} else {
 			Optional<GameState> state = resultReg.getData();
+			System.out.println("GameState: " + resultReg.getData().toString());
 			return state;
 		}
 	}
 	
+	public String getPlayerID() {
+		return playerID;
+	}
+
 	//TODO
 	public void sendPlayerMove(PlayerMove move) {
 		Mono<ResponseEnvelope> webAccess = baseWebClient.method(HttpMethod.POST)

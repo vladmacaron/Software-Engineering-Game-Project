@@ -40,8 +40,11 @@ public class GameView {
 				MapObject mapObject = gameMap.getMapObject(new Coordinates(x, y));
 				
 				printTerrain(mapObject.getTerrainType());
-				mapObject.getObjectsOnField().forEach((object) -> printObject(object));
-				System.out.print("...");
+				if(mapObject.getObjectsOnField().isEmpty()) {
+					System.out.print("...");
+				} else {
+					mapObject.getObjectsOnField().forEach((object) -> printObject(object));
+				}
 				System.out.print(COLOR_RESET);
 				//System.out.print("|");
 			}
@@ -68,16 +71,24 @@ public class GameView {
 	private void printObject(ObjectType objectType) {
 		switch(objectType) {
 		case CASTLE:
+			System.out.print("^");
 			break;
 		case ENEMY:
+			System.out.print("E");
 			break;
 		case ENEMY_CASTLE:
+			//add color
+			System.out.print("^");
 			break;
 		case ENEMY_TREASURE:
+			//add color
+			System.out.print("$");
 			break;
 		case PLAYER:
+			System.out.print("P");
 			break;
 		case TREASURE:
+			System.out.print("$");
 			break;
 		default:
 			break;

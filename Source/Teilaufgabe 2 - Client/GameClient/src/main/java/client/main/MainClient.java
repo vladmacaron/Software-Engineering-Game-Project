@@ -14,9 +14,11 @@ import MessagesBase.MessagesFromClient.ERequestState;
 import MessagesBase.MessagesFromClient.PlayerRegistration;
 import MessagesBase.MessagesFromServer.GameState;
 import client.converter.Converter;
+import client.game.GameEngine;
 import client.mapcreator.MapCreator;
 import client.model.Map;
 import client.network.Network;
+import client.view.GameView;
 import reactor.core.publisher.Mono;
 
 public class MainClient {
@@ -76,48 +78,13 @@ public class MainClient {
 		//String gameId = args[2];
 		
 		String serverBaseUrl = "http://swe1.wst.univie.ac.at";
-		String gameID = "Lab3o";
-
-		Network network = new Network(gameID, serverBaseUrl);
-		network.registerPlayer("Vladislav", "Mazurov", "vladislavm95");
+		String gameID = "eeHV4";
 		
-		//Network network2 = new Network(gameID, serverBaseUrl);
-		network.registerPlayer("Test", "Test", "vladislavm95");
+		Map map = new Map(); // MODEL
+		GameView commandLineView = new GameView(map); // VIEW
+		GameEngine gameEngine = new GameEngine(map, serverBaseUrl, gameID); // CONTROLLER
 		
-		try
-		{
-		    Thread.sleep(1000);
-		}
-		catch(InterruptedException ex)
-		{
-		    Thread.currentThread().interrupt();
-		}
-		
-		Map playerMap1 = new Map();
-		
-		do {
-			playerMap1 = MapCreator.createPlayerMap();
-		} while (!MapCreator.validateMap(playerMap1));
-		
-		Map playerMap2 = new Map();
-		
-		do {
-			playerMap2 = MapCreator.createPlayerMap();
-		} while (!MapCreator.validateMap(playerMap2));
-		
-		
-		network.sendHalfMap(playerMap1);
-		
-		try
-		{
-		    Thread.sleep(1000);
-		}
-		catch(InterruptedException ex)
-		{
-		    Thread.currentThread().interrupt();
-		}
-		
-		network.sendHalfMap(playerMap2);
+		gameEngine.start();
 		
 		
 		

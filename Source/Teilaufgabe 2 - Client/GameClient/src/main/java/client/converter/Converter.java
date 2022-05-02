@@ -1,6 +1,7 @@
 package client.converter;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
@@ -9,6 +10,12 @@ import MessagesBase.MessagesFromClient.ETerrain;
 import MessagesBase.MessagesFromClient.HalfMap;
 import MessagesBase.MessagesFromClient.HalfMapNode;
 import MessagesBase.MessagesFromClient.PlayerMove;
+import MessagesBase.MessagesFromServer.EPlayerGameState;
+import MessagesBase.MessagesFromServer.ETreasureState;
+import MessagesBase.MessagesFromServer.FullMap;
+import MessagesBase.MessagesFromServer.FullMapNode;
+import MessagesBase.MessagesFromServer.GameState;
+import MessagesBase.MessagesFromServer.PlayerState;
 import client.model.Coordinates;
 import client.model.Map;
 import client.model.MapObject;
@@ -35,6 +42,60 @@ public class Converter {
 		return halfMap;
 	}
 	
+	public static EPlayerGameState getPlayerState(GameState gameState, String playerID) {
+		for(PlayerState playerState: gameState.getPlayers()) {
+			if(playerState.getUniquePlayerID().equals(playerID)) {
+				return playerState.getState();
+			}
+		}
+		return EPlayerGameState.MustWait;
+	}
+	
+	public static Map convertToMap(FullMap fullMap) {
+		HashMap<Coordinates, MapObject> fields = new HashMap<Coordinates, MapObject>();
+		
+		Collection<FullMapNode> halfMapNodes = fullMap.getMapNodes();
+		for(FullMapNode mapNode : halfMapNodes) {
+			TerrainType terrain = convertToTerrainType(mapNode.getTerrain());
+			List<ObjectType> objects = new ArrayList<>();
+			
+			switch(mapNode.getFortState()) {
+			case EnemyFortPresent:
+				objects.add(ObjectType.ENEMY_CASTLE);
+				break;
+			case MyFortPresent:
+				objects.add(ObjectType.CASTLE);
+				break;
+			default:
+				break;
+			}
+			
+			if(mapNode.getTreasureState().equals(ETreasureState.MyTreasureIsPresent)) {
+				objects.add(ObjectType.TREASURE);
+			}
+			
+			switch(mapNode.getPlayerPositionState()) {
+			case BothPlayerPosition:
+				objects.add(ObjectType.PLAYER);
+				objects.add(ObjectType.ENEMY);
+				break;
+			case EnemyPlayerPosition:
+				objects.add(ObjectType.ENEMY);
+				break;
+			case MyPlayerPosition:
+				objects.add(ObjectType.PLAYER);
+				break;
+			case NoPlayerPresent:
+				break;
+			default:
+				break;
+			}
+			
+			fields.put(new Coordinates(mapNode.getX(), mapNode.getY()), new MapObject(terrain, objects));
+		}
+		return new Map(fields);
+	}
+	
 	public static ETerrain convertToETerrain(TerrainType terrainType) {
 		
 		switch(terrainType) {
@@ -48,7 +109,20 @@ public class Converter {
 			//add exception
 			return ETerrain.Grass;
 		}
-		
+	}
+	
+	public static TerrainType convertToTerrainType(ETerrain eTerrain) {
+		switch(eTerrain) {
+		case Grass:
+			return TerrainType.GRASS;
+		case Mountain:
+			return TerrainType.MOUNTAIN;
+		case Water:
+			return TerrainType.WATER;
+		default:
+			//add exception
+			return TerrainType.GRASS;
+		}
 	}
 	
 	public static PlayerMove convertToPlayerMove(String playerID, MovementType movementType) {
