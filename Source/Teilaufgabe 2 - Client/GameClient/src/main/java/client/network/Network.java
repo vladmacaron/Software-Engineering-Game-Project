@@ -99,7 +99,6 @@ public class Network {
 			return Optional.empty();
 		} else {
 			Optional<GameState> state = resultReg.getData();
-			System.out.println("GameState: " + resultReg.getData().toString());
 			return state;
 		}
 	}

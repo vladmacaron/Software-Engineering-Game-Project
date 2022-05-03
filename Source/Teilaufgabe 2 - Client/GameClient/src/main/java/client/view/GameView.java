@@ -38,15 +38,30 @@ public class GameView {
 		for(int y = 0; y < gameMap.getMaxRow(); y++) {
 			for(int x = 0; x < gameMap.getMaxColumn(); x++) {
 				MapObject mapObject = gameMap.getMapObject(new Coordinates(x, y));
-				
+				System.out.print("|");
 				printTerrain(mapObject.getTerrainType());
 				if(mapObject.getObjectsOnField().isEmpty()) {
-					System.out.print("...");
+					System.out.print("___");
 				} else {
-					mapObject.getObjectsOnField().forEach((object) -> printObject(object));
+					switch(mapObject.getObjectsOnField().size()) {
+					case 1:
+						System.out.print("_");
+						mapObject.getObjectsOnField().forEach((object) -> printObject(object));
+						System.out.print("_");
+						break;
+					case 2:
+						mapObject.getObjectsOnField().forEach((object) -> printObject(object));
+						System.out.print("_");
+						break;
+					case 3:
+						mapObject.getObjectsOnField().forEach((object) -> printObject(object));
+						break;
+					default:
+						mapObject.getObjectsOnField().forEach((object) -> printObject(object));
+						break;
+					}
 				}
 				System.out.print(COLOR_RESET);
-				//System.out.print("|");
 			}
 			System.out.println("");
 		}

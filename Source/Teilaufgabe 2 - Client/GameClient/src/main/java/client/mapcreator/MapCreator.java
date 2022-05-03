@@ -114,7 +114,7 @@ public class MapCreator {
 			}
 		}
 		
-		return !(countWater>1);
+		return !(countWater>0);
 	}
 	
 	private static boolean checkBorders(Map playerMap) {

@@ -78,7 +78,7 @@ public class MainClient {
 		//String gameId = args[2];
 		
 		String serverBaseUrl = "http://swe1.wst.univie.ac.at";
-		String gameID = "eeHV4";
+		String gameID = "hqRgj";
 		
 		Map map = new Map(); // MODEL
 		GameView commandLineView = new GameView(map); // VIEW
