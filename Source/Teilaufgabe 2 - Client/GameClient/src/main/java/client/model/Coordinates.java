@@ -22,8 +22,8 @@ public class Coordinates {
 		return y;
 	}
 	
-	public List<Coordinates> getNeighbours(int maxX, int maxY) {
-		final int minX = 0, minY = 0;
+	public List<Coordinates> getNeighbours(int minX, int minY, int maxX, int maxY) {
+		//final int minX = 0, minY = 0;
 		//maxX = 7, maxY = 3;
 		List<Coordinates> neighbors = new ArrayList<Coordinates>(8);
 			for (int i = Math.max(x - 1, minX); i <= Math.min(x + 1, maxX); i++)

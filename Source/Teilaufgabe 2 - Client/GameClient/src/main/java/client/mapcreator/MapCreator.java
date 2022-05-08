@@ -70,16 +70,19 @@ public class MapCreator {
 	private static boolean checkIsland(Map playerMap) {
 		HashMap<Coordinates, MapObject> fields = playerMap.getMapFields();
 		
-		if(!checkCorners(playerMap, new Coordinates(0,0))) {
+		if(checkCorners(playerMap, new Coordinates(0,0))) {
 			return false;
 		}
-		if(!checkCorners(playerMap, new Coordinates(7,0))) {
+		if(checkCorners(playerMap, new Coordinates(7,0))) {
 			return false;
 		}
-		if(!checkCorners(playerMap, new Coordinates(0,3))) {
+		if(checkCorners(playerMap, new Coordinates(0,3))) {
 			return false;
 		}
-		if(!checkCorners(playerMap, new Coordinates(7,3))) {
+		if(checkCorners(playerMap, new Coordinates(7,3))) {
+			return false;
+		}
+		if(checkDiagonal(playerMap)) {
 			return false;
 		}
 		
@@ -87,7 +90,7 @@ public class MapCreator {
 			for(int x = 0; x<MAX_X; x++) {
 				int countWater = 0;
 				Coordinates cornerCoord = new Coordinates(x,y);
-				for(Coordinates neighbour : cornerCoord.getNeighbours(7, 3)) {
+				for(Coordinates neighbour : cornerCoord.getNeighbours(0, 0, 7, 3)) {
 					if(fields.get(neighbour).getTerrainType().equals(TerrainType.WATER)) {
 						countWater++;
 					}
@@ -105,13 +108,13 @@ public class MapCreator {
 		HashMap<Coordinates, MapObject> fields = playerMap.getMapFields();
 		
 		int countWater = 0;
-		for(Coordinates neighbour : cornerCoord.getNeighbours(7, 3)) {
+		for(Coordinates neighbour : cornerCoord.getNeighbours(0, 0, 7, 3)) {
 			if(fields.get(neighbour).getTerrainType().equals(TerrainType.WATER)) {
 				countWater++;
 			}
 		}
 		
-		return !(countWater>0);
+		return countWater>0;
 	}
 	
 	private static boolean checkBorders(Map playerMap) {
@@ -136,6 +139,21 @@ public class MapCreator {
 		}
 		
 		return !(countLongSide>3 || countShortSide>1);
+	}
+	
+	private static boolean checkDiagonal(Map playerMap) {
+		HashMap<Coordinates, MapObject> fields = playerMap.getMapFields();
+		for(int x=2, y=3; x<6; x++, y--) {
+			if(!fields.get(new Coordinates(x,y)).getTerrainType().equals(TerrainType.WATER)) {
+				return false;
+			}
+		}
+		for(int x=2, y=0; x<6; x++, y++) {
+			if(fields.get(new Coordinates(x,y)).getTerrainType().equals(TerrainType.WATER)) {
+				return false;
+			}
+		}
+		return true;
 	}
 	
 }

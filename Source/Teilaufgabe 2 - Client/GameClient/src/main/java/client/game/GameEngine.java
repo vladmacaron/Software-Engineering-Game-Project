@@ -7,7 +7,6 @@ import java.util.Set;
 import MessagesBase.MessagesFromServer.EPlayerGameState;
 import MessagesBase.MessagesFromServer.GameState;
 import client.ai.MapBrain;
-import client.ai.PathBrain;
 import client.converter.Converter;
 import client.mapcreator.MapCreator;
 import client.model.Coordinates;
@@ -34,12 +33,12 @@ public class GameEngine {
 		this.gameMap = gameMap;
 		this.args = args;
 		
-		serverBaseUrl = "http://swe1.wst.univie.ac.at";
-		gameID = "K8jDO";
+		this.serverBaseUrl = "http://swe1.wst.univie.ac.at";
+		this.gameID = "F6xeU";
 		
 		if(args.length==3) {
-			serverBaseUrl = args[1];
-			gameID = args[2];
+			this.serverBaseUrl = args[1];
+			this.gameID = args[2];
 		}
 		
 		this.network = new Network(gameID, serverBaseUrl);
@@ -167,7 +166,8 @@ public class GameEngine {
 	}
 	
 	private boolean checkEndGame() {
-		return checkGameState().equals(EPlayerGameState.Lost) || checkGameState().equals(EPlayerGameState.Won);
+		EPlayerGameState playerGameState = checkGameState();
+		return playerGameState.equals(EPlayerGameState.Lost) || playerGameState.equals(EPlayerGameState.Won);
 	}
 
 }

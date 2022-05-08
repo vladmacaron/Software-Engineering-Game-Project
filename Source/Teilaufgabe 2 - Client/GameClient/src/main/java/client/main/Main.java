@@ -21,7 +21,7 @@ import client.network.Network;
 import client.view.GameView;
 import reactor.core.publisher.Mono;
 
-public class MainClient {
+public class Main {
 
 	// ADDITIONAL TIPS ON THIS MATTER ARE GIVEN THROUGHOUT THE TUTORIAL SESSION!
 
@@ -82,7 +82,6 @@ public class MainClient {
 		
 		Map map = new Map(); 
 		GameView commandLineView = new GameView(map); 
-		//GameEngine gameEngine = new GameEngine(map, serverBaseUrl, gameID);
 		GameEngine gameEngine = new GameEngine(map, args);
 		
 		gameEngine.start();

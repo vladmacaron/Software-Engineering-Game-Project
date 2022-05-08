@@ -69,10 +69,10 @@ public class MapBrain {
 		return goal;
 	}
 	
-	public Set<Coordinates> getPossibleMove(int x, int y) {
+	public Set<Coordinates> getPossibleMove(int minX, int minY, int maxX, int maxY) {
 		Set<Coordinates> result = new HashSet<>();
 		Coordinates currentCoord = gameMap.getPlayerPosition();
-		for(Coordinates neighbour: currentCoord.getNeighbours(x, y)) {
+		for(Coordinates neighbour: currentCoord.getNeighbours(minX, minY, maxX, maxY)) {
 			if(canMove(currentCoord, neighbour)) {
 				if(!visitedFields.contains(neighbour) && !gameMap.getMapObject(neighbour).getTerrainType().equals(TerrainType.WATER)) {
 					result.add(neighbour);
@@ -81,7 +81,7 @@ public class MapBrain {
 			}
 		}
 		if(result.isEmpty()) {
-			for(Coordinates neighbour: currentCoord.getNeighbours(gameMap.getMaxColumn(), gameMap.getMaxRow())) {
+			for(Coordinates neighbour: currentCoord.getNeighbours(0, 0, gameMap.getMaxColumn(), gameMap.getMaxRow())) {
 				if(canMove(currentCoord, neighbour)) {
 					if(!gameMap.getMapObject(neighbour).getTerrainType().equals(TerrainType.WATER)) {
 						result.add(neighbour);
@@ -100,15 +100,15 @@ public class MapBrain {
 		
 		if(gameMap.getMaxColumn()==15) {
 			if(currentCoord.getX()<8 && currentCoord.getY()<4) {
-				result = getPossibleMove(gameMap.getMaxColumn(),gameMap.getMaxRow());
+				result = getPossibleMove(0, 0, gameMap.getMaxColumn(),gameMap.getMaxRow());
 			} else {
-				result = getPossibleMove(gameMap.getMaxColumn(),gameMap.getMaxRow());
+				result = getPossibleMove(0, 0, gameMap.getMaxColumn(),gameMap.getMaxRow());
 			}
 		} else {
 			if(currentCoord.getX()<8 && currentCoord.getY()<4) {
-				result = getPossibleMove(gameMap.getMaxColumn(),gameMap.getMaxRow());
+				result = getPossibleMove(0, 0, gameMap.getMaxColumn(),gameMap.getMaxRow());
 			} else {
-				result = getPossibleMove(gameMap.getMaxColumn(),gameMap.getMaxRow());
+				result = getPossibleMove(0, 0, gameMap.getMaxColumn(),gameMap.getMaxRow());
 			}
 		}
 		
@@ -123,15 +123,15 @@ public class MapBrain {
 		
 		if(gameMap.getMaxColumn()==15) {
 			if(currentCoord.getX()<8 && currentCoord.getY()<4) {
-				result = getPossibleMove(7,3);
+				result = getPossibleMove(0, 0, 7, 3);
 			} else {
-				result = getPossibleMove(7,7);
+				result = getPossibleMove(8, 0, gameMap.getMaxColumn(), gameMap.getMaxRow());
 			}
 		} else {
 			if(currentCoord.getX()<8 && currentCoord.getY()<4) {
-				result = getPossibleMove(7,3);
+				result = getPossibleMove(0, 0, 7, 3);
 			} else {
-				result = getPossibleMove(15,3);
+				result = getPossibleMove(0, 4, gameMap.getMaxColumn(), gameMap.getMaxRow());
 			}
 		}
 		
