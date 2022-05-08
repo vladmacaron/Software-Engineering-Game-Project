@@ -47,6 +47,18 @@ public class Map {
 		return mapFields.get(coord);
 	}
 	
+	public Coordinates getPlayerPosition() {
+		Coordinates res = new Coordinates(0,0);
+		for (HashMap.Entry<Coordinates, MapObject> field : mapFields.entrySet()) {
+			for(ObjectType objects : field.getValue().getObjectsOnField()) {
+				if(objects.equals(ObjectType.PLAYER)) {
+					res = field.getKey();
+				}
+			}
+		}
+		return res;
+	}
+	
 	public int getMaxRow() {
 		Coordinates maxKey = null;
         for (Coordinates key : mapFields.keySet()) {
@@ -54,7 +66,7 @@ public class Map {
                 maxKey = key;
             }
         }
-        return maxKey.getY()+1;
+        return maxKey.getY();
 	}
 	
 	public int getMaxColumn() {
@@ -64,7 +76,7 @@ public class Map {
                 maxKey = key;
             }
         }
-        return maxKey.getX()+1;
+        return maxKey.getX();
 	}
 
 	@Override

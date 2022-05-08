@@ -77,12 +77,13 @@ public class MainClient {
 		//String serverBaseUrl = args[1];
 		//String gameId = args[2];
 		
-		String serverBaseUrl = "http://swe1.wst.univie.ac.at";
-		String gameID = "hqRgj";
+		//String serverBaseUrl = "http://swe1.wst.univie.ac.at";
+		//String gameID = "unkZ4";
 		
-		Map map = new Map(); // MODEL
-		GameView commandLineView = new GameView(map); // VIEW
-		GameEngine gameEngine = new GameEngine(map, serverBaseUrl, gameID); // CONTROLLER
+		Map map = new Map(); 
+		GameView commandLineView = new GameView(map); 
+		//GameEngine gameEngine = new GameEngine(map, serverBaseUrl, gameID);
+		GameEngine gameEngine = new GameEngine(map, args);
 		
 		gameEngine.start();
 		

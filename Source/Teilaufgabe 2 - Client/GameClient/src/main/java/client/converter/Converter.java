@@ -51,6 +51,15 @@ public class Converter {
 		return EPlayerGameState.MustWait;
 	}
 	
+	public static boolean hasTreasure(GameState gameState, String playerID) {
+		for(PlayerState playerState: gameState.getPlayers()) {
+			if(playerState.getUniquePlayerID().equals(playerID)) {
+				return playerState.hasCollectedTreasure();
+			}
+		}
+		return false;
+	}
+	
 	public static Map convertToMap(FullMap fullMap) {
 		HashMap<Coordinates, MapObject> fields = new HashMap<Coordinates, MapObject>();
 		
@@ -93,6 +102,7 @@ public class Converter {
 			
 			fields.put(new Coordinates(mapNode.getX(), mapNode.getY()), new MapObject(terrain, objects));
 		}
+		
 		return new Map(fields);
 	}
 	

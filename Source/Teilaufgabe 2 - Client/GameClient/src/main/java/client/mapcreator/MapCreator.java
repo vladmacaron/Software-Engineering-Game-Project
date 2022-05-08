@@ -18,9 +18,6 @@ public class MapCreator {
 	static final int MAX_X = 8;
 	
 	public static Map createPlayerMap() {
-		//final int MAX_Y = 4;
-		//final int MAX_X = 8;
-	
 		HashMap<Coordinates, MapObject> fields = new HashMap();
 		
 		int numberOfWaterFields = 5;
@@ -90,7 +87,7 @@ public class MapCreator {
 			for(int x = 0; x<MAX_X; x++) {
 				int countWater = 0;
 				Coordinates cornerCoord = new Coordinates(x,y);
-				for(Coordinates neighbour : cornerCoord.getNeighbours()) {
+				for(Coordinates neighbour : cornerCoord.getNeighbours(7, 3)) {
 					if(fields.get(neighbour).getTerrainType().equals(TerrainType.WATER)) {
 						countWater++;
 					}
@@ -108,7 +105,7 @@ public class MapCreator {
 		HashMap<Coordinates, MapObject> fields = playerMap.getMapFields();
 		
 		int countWater = 0;
-		for(Coordinates neighbour : cornerCoord.getNeighbours()) {
+		for(Coordinates neighbour : cornerCoord.getNeighbours(7, 3)) {
 			if(fields.get(neighbour).getTerrainType().equals(TerrainType.WATER)) {
 				countWater++;
 			}
