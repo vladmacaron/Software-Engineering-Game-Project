@@ -35,7 +35,7 @@ public class GameEngine {
 		this.args = args;
 		
 		serverBaseUrl = "http://swe1.wst.univie.ac.at";
-		gameID = "C6kxU";
+		gameID = "K8jDO";
 		
 		if(args.length==3) {
 			serverBaseUrl = args[1];
@@ -51,49 +51,6 @@ public class GameEngine {
 		readyToSendHalfMap();
 		readyToReceiveFullMap();
 		
-		
-		/*boolean canAct = false;
-		gameState = network.getGameState().get();
-		while(!canAct) {
-			if(Converter.getPlayerState(gameState, playerID).equals(EPlayerGameState.MustAct)) {
-				network.sendPlayerMove(Converter.convertToPlayerMove(playerID, MovementType.RIGHT));
-				canAct = true;
-				gameMap.setMap(Converter.convertToMap(gameState.getMap().get()));
-				System.out.println("test1_1");
-			} else {
-				gameMap.setMap(Converter.convertToMap(gameState.getMap().get()));
-				gameState = network.getGameState().get();
-				System.out.println("test1_2");
-			}
-		}
-		System.out.println("test2");
-		//network.sendPlayerMove(Converter.convertToPlayerMove(playerID, MovementType.RIGHT));
-		
-		canAct = false;
-		gameState = network.getGameState().get();
-		while(!canAct) {
-			if(Converter.getPlayerState(gameState, playerID).equals(EPlayerGameState.MustAct)) {
-				network.sendPlayerMove(Converter.convertToPlayerMove(playerID, MovementType.RIGHT));
-				gameMap.setMap(Converter.convertToMap(gameState.getMap().get()));
-				canAct = true;
-			} else {
-				gameMap.setMap(Converter.convertToMap(gameState.getMap().get()));
-				gameState = network.getGameState().get();
-			}
-		}
-		
-		canAct = false;
-		gameState = network.getGameState().get();
-		while(!canAct) {
-			if(Converter.getPlayerState(gameState, playerID).equals(EPlayerGameState.MustAct)) {
-				network.sendPlayerMove(Converter.convertToPlayerMove(playerID, MovementType.RIGHT));
-				gameMap.setMap(Converter.convertToMap(gameState.getMap().get()));
-				canAct = true;
-			} else {
-				gameMap.setMap(Converter.convertToMap(gameState.getMap().get()));
-				gameState = network.getGameState().get();
-			}
-		}*/
 		mapBrain = new MapBrain(gameMap, visitedFields);
 		
 		while(!checkEndGame()) {
@@ -105,7 +62,6 @@ public class GameEngine {
 		} else {
 			System.out.println("You Win");
 		}
-		
 		
 	}
 	

@@ -119,7 +119,7 @@ public class MapBrain {
 	public Set<Coordinates> getPossibleMoveToFindTreasure() {
 		Set<Coordinates> result = new HashSet<>();
 		Coordinates currentCoord = gameMap.getPlayerPosition();
-		System.out.println("Max X: " + gameMap.getMaxColumn() + "Max Y: " + gameMap.getMaxRow());
+		//System.out.println("Max X: " + gameMap.getMaxColumn() + "Max Y: " + gameMap.getMaxRow());
 		
 		if(gameMap.getMaxColumn()==15) {
 			if(currentCoord.getX()<8 && currentCoord.getY()<4) {
@@ -134,7 +134,6 @@ public class MapBrain {
 				result = getPossibleMove(15,3);
 			}
 		}
-		
 		
 		return result;
 	}
