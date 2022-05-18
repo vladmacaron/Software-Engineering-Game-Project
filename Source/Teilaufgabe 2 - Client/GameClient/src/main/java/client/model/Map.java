@@ -11,7 +11,6 @@ public class Map {
 	private HashMap<Coordinates, MapObject> mapFields;
 
 	public Map(HashMap<Coordinates, MapObject> mapFields) {
-		super();
 		this.mapFields = mapFields;
 	}
 	
@@ -24,11 +23,24 @@ public class Map {
 		changes.addPropertyChangeListener(listener);
 	}
 	
+	public Map(Map other) {
+		this.mapFields = new HashMap<Coordinates, MapObject>();
+		if(!other.mapFields.isEmpty()) {
+			for(int x=0; x<other.getMaxColumn(); x++) {
+				for(int y=0; y<other.getMaxRow(); y++) {
+					Coordinates tempCoord = new Coordinates(x, y);
+					this.mapFields.put(tempCoord, other.getMapObject(tempCoord));
+				}
+			}
+		}
+		//this.mapFields = other.mapFields;
+	}
+	
 	public void setMap(Map map) {
-		Map beforeChange = new Map(this.getMapFields());
+		//Map beforeChange = new Map(this.getMapFields());
+		Map beforeChange = new Map(this);
 		this.mapFields = map.getMapFields();
-		
-		changes.firePropertyChange("map", beforeChange, map);
+		changes.firePropertyChange("map", beforeChange, this);
 	}
 
 	public HashMap<Coordinates, MapObject> getMapFields() {

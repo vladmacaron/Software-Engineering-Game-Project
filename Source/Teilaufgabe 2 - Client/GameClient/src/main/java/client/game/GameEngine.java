@@ -1,7 +1,9 @@
 package client.game;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import MessagesBase.MessagesFromServer.EPlayerGameState;
@@ -24,9 +26,11 @@ public class GameEngine {
 	String playerID = "";
 	Network network;
 	GameState gameState;
+	int roundNumber = 0;
 	
 	MapBrain mapBrain;
 	Set<Coordinates> visitedFields = new HashSet<>();
+	//List<Coordinates> visitedFields = new ArrayList<>();
 	
 	public GameEngine(Map gameMap, String[] args) {
 		super();
@@ -34,7 +38,7 @@ public class GameEngine {
 		this.args = args;
 		
 		this.serverBaseUrl = "http://swe1.wst.univie.ac.at";
-		this.gameID = "F6xeU";
+		this.gameID = "P8M0f";
 		
 		if(args.length==3) {
 			this.serverBaseUrl = args[1];
@@ -53,12 +57,18 @@ public class GameEngine {
 		mapBrain = new MapBrain(gameMap, visitedFields);
 		
 		while(!checkEndGame()) {
-			playMove();
+			if(Converter.getPlayerState(gameState, playerID).equals(EPlayerGameState.MustAct)) {
+				playMove();
+			}
+			//playMove();
+			//System.out.println("check");
 		}
 		
-		if(checkGameState().equals(EPlayerGameState.Lost)) {
+		if(Converter.getPlayerState(gameState, playerID).equals(EPlayerGameState.Lost)) {
+			gameMap.setMap(Converter.convertToMap(gameState.getMap().get()));
 			System.out.println("You Lost");
 		} else {
+			gameMap.setMap(Converter.convertToMap(gameState.getMap().get()));
 			System.out.println("You Win");
 		}
 		
@@ -80,7 +90,7 @@ public class GameEngine {
 		gameState = network.getGameState().get();
 		
 		while(!canAct) {
-			if(Converter.getPlayerState(gameState, playerID).equals(EPlayerGameState.MustAct)) {
+			if(Converter.getPlayerState(gameState, playerID).equals(EPlayerGameState.MustAct)) { 
 				canAct = true;
 			} else {
 				waitTime();
@@ -93,7 +103,7 @@ public class GameEngine {
 		do {
 			playerMap = MapCreator.createPlayerMap();
 		} while (!MapCreator.validateMap(playerMap));
-		
+	
 		gameMap.setMap(playerMap);
 		network.sendHalfMap(playerMap);
 		waitTime();
@@ -116,54 +126,37 @@ public class GameEngine {
 	
 	private EPlayerGameState checkGameState() {
 		gameState = network.getGameState().get();
+		//gameMap.setMap(Converter.convertToMap(gameState.getMap().get()));
 		return Converter.getPlayerState(gameState, playerID);
 	}
 	
 	private void playMove() {
-		//Set<Coordinates> visitedFields = new HashSet<>();
 		gameMap.setMap(Converter.convertToMap(gameState.getMap().get()));
-		visitedFields.add(gameMap.getPlayerPosition());
+		//visitedFields.add(gameMap.getPlayerPosition());
+		mapBrain.addVisitedPoint(gameMap.getPlayerPosition());
 		//MapBrain mapBrain = new MapBrain(gameMap, visitedFields);
-		
-		while(!checkGameState().equals(EPlayerGameState.MustAct)) {
+		/*while(checkGameState().equals(EPlayerGameState.MustWait)) {
 			waitTime();
-			gameMap.setMap(Converter.convertToMap(gameState.getMap().get()));
-		}
-		
-		MovementType nextMove;
-		
-		if(Converter.hasTreasure(gameState, playerID)) {
-			Coordinates goalCoord = mapBrain.findEnemyCastle();
-			nextMove = mapBrain.nextMove(goalCoord);
-			network.sendPlayerMove(Converter.convertToPlayerMove(playerID, nextMove));
-		} else {
-			Coordinates goalCoord = mapBrain.findTreasure();
-			nextMove = mapBrain.nextMove(goalCoord);
-			network.sendPlayerMove(Converter.convertToPlayerMove(playerID, nextMove));
-		}
-		
-		
-		/*
-		if(mapBrain.getNextPossibleMove().stream().anyMatch(m -> (gameMap.getMapObject(m).getObjectsOnField().contains(ObjectType.TREASURE)))) {
-			for(Coordinates goal : mapBrain.getNextPossibleMove()) {
-				if(gameMap.getMapObject(goal).getObjectsOnField().contains(ObjectType.TREASURE)) {
-					nextMove = mapBrain.nextMove(goal);
-					network.sendPlayerMove(Converter.convertToPlayerMove(playerID, nextMove));
-				} 
-			}
-		} else {
-			nextMove = mapBrain.nextMove(mapBrain.getNextPossibleMove().stream().findFirst().get());
-			network.sendPlayerMove(Converter.convertToPlayerMove(playerID, nextMove));
+			//gameMap.setMap(Converter.convertToMap(gameState.getMap().get()));
 		}*/
 		
-		
-		//for(Coordinates nextCoord : mapBrain.getNextPossibleMove()) {
-		//	nextMove = mapBrain.nextMove(nextCoord);
-		//}
-	
-		//network.sendPlayerMove(Converter.convertToPlayerMove(playerID, nextMove));
-		gameMap.setMap(Converter.convertToMap(gameState.getMap().get()));
+		MovementType nextMove;
+		roundNumber++;
+		if(Converter.hasTreasure(gameState, playerID)) {
+			System.out.println("Round number: " + roundNumber + ", Player has treasure\n");
+			nextMove = mapBrain.findCastle();
+		} else {
+			System.out.println("Round number: " + roundNumber + ", Player does not have treasure\n");
+			nextMove = mapBrain.findTreasure();
+		}
+
+		network.sendPlayerMove(Converter.convertToPlayerMove(playerID, nextMove));
+		waitTime();
+		//gameMap.setMap(Converter.convertToMap(gameState.getMap().get()));
 	}
+	
+	//private boolean checkRules() {
+	//}
 	
 	private boolean checkEndGame() {
 		EPlayerGameState playerGameState = checkGameState();

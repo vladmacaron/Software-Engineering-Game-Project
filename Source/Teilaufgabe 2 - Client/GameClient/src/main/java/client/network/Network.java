@@ -120,7 +120,7 @@ public class Network {
 		if (resultReg.getState() == ERequestState.Error) {
 			System.err.println("Client error, errormessage: " + resultReg.getExceptionMessage());
 		} else {
-			System.err.println("Client has sent PlayerMove successfully");
+			//System.err.println("Client has sent PlayerMove successfully");
 		}
 	}
 }

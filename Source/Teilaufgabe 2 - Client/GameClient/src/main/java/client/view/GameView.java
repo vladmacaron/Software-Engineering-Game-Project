@@ -25,16 +25,15 @@ public class GameView {
 	final PropertyChangeListener mapChangedListener = event -> {
 		Object model = event.getSource();
 		Object newValue = event.getNewValue();
-	    	
-		System.out.println("Display of the changed value:" + newValue);
 
 		if(model instanceof Map) {
 			Map castedModel = (Map)model;
 			printCurrentMap(castedModel);
-		}	
+		}
 	};
 	
 	public void printCurrentMap(Map gameMap) {
+		
 		for(int y = 0; y <= gameMap.getMaxRow(); y++) {
 			for(int x = 0; x <= gameMap.getMaxColumn(); x++) {
 				MapObject mapObject = gameMap.getMapObject(new Coordinates(x, y));

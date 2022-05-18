@@ -143,17 +143,25 @@ public class MapCreator {
 	
 	private static boolean checkDiagonal(Map playerMap) {
 		HashMap<Coordinates, MapObject> fields = playerMap.getMapFields();
+		int countWater = 0;
 		for(int x=2, y=3; x<6; x++, y--) {
-			if(!fields.get(new Coordinates(x,y)).getTerrainType().equals(TerrainType.WATER)) {
-				return false;
+			if(fields.get(new Coordinates(x,y)).getTerrainType().equals(TerrainType.WATER)) {
+				countWater++;
 			}
 		}
+		if(countWater==4) {
+			return true;
+		}
+		countWater = 0;
 		for(int x=2, y=0; x<6; x++, y++) {
 			if(fields.get(new Coordinates(x,y)).getTerrainType().equals(TerrainType.WATER)) {
-				return false;
+				countWater++;
 			}
 		}
-		return true;
+		if(countWater==4) {
+			return true;
+		}
+		return false;
 	}
 	
 }
