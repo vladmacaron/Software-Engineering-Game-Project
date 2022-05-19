@@ -18,7 +18,7 @@ public class MapCreator {
 	static final int MAX_X = 8;
 	
 	public static Map createPlayerMap() {
-		HashMap<Coordinates, MapObject> fields = new HashMap();
+		HashMap<Coordinates, MapObject> fields = new HashMap<>();
 		
 		int numberOfWaterFields = 5;
 		int numberOfMountainFields = 8;
@@ -48,7 +48,6 @@ public class MapCreator {
 		int randX = rand.nextInt(MAX_X);
 		int randY = rand.nextInt(MAX_Y);
 		Coordinates castleCoord = new Coordinates(randX, randY);
-		//System.out.println("X: " + castleCoord.getX() + " Y: " + castleCoord.getY());
 		
 		while(!fields.get(castleCoord).getTerrainType().equals(TerrainType.GRASS)) {
 			randX = rand.nextInt(MAX_X);

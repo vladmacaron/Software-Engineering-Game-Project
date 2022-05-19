@@ -2,6 +2,8 @@ package client.network;
 
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
@@ -26,11 +28,13 @@ public class Network {
 	private String gameID;
 	private String playerID;
 	private String baseURL;
+	private Logger logger;
 	
 	public Network(String gameID, String baseURL) {
 		super();
 		this.gameID = gameID;
 		this.baseURL = baseURL;
+		this.logger = LoggerFactory.getLogger(Network.class);
 		
 		baseWebClient = WebClient.builder().baseUrl(baseURL + "/games")
 				.defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_XML_VALUE)
@@ -47,23 +51,13 @@ public class Network {
 				.bodyToMono(ResponseEnvelope.class);
 		
 		ResponseEnvelope<UniquePlayerIdentifier> resultReg = webAccess.block();
-		// always check for errors, and if some are reported, at least print them to the
-		// console (logging should always be preferred!)
-		// so that you become aware of them during debugging! The provided server gives
-		// you constructive error messages.
 		if (resultReg.getState() == ERequestState.Error) {
-			// typically happens if you forgot to create a new game before the client
-			// execution or
-			// forgot to adapt the run configuration so that it supplies the id of the new
-			// game to the client
-			// open http://swe1.wst.univie.ac.at:18235/games in your browser to create a new
-			// game and obtain its game id
-			System.err.println("Client error, errormessage: " + resultReg.getExceptionMessage());
+			logger.error("Client error, errormessage: " + resultReg.getExceptionMessage());
 			return "";
 		} else {
 			UniquePlayerIdentifier uniqueID = resultReg.getData().get();
 			playerID = uniqueID.getUniquePlayerID();
-			System.out.println("My Player ID: " + uniqueID.getUniquePlayerID());
+			logger.info("My Player ID: " + uniqueID.getUniquePlayerID());
 			return playerID;
 		}
 	}
@@ -80,9 +74,9 @@ public class Network {
 		ResponseEnvelope resultReg = webAccess.block();
 		
 		if (resultReg.getState() == ERequestState.Error) {
-			System.err.println("Client error sending Map, errormessage: " + resultReg.getExceptionMessage());
+			logger.error("Client error sending Map, errormessage: " + resultReg.getExceptionMessage());
 		} else {
-			System.err.println("Client has sent HalfMap successfully");
+			logger.info("Client has sent HalfMap successfully");
 		}
 	}
 	
@@ -95,7 +89,7 @@ public class Network {
 		ResponseEnvelope<GameState> resultReg = webAccess.block();
 		
 		if (resultReg.getState() == ERequestState.Error) {
-			System.err.println("Client error, errormessage: " + resultReg.getExceptionMessage());
+			logger.error("Client error while getting GameState, errormessage: " + resultReg.getExceptionMessage());
 			return Optional.empty();
 		} else {
 			Optional<GameState> state = resultReg.getData();
@@ -118,9 +112,9 @@ public class Network {
 		ResponseEnvelope resultReg = webAccess.block();
 		
 		if (resultReg.getState() == ERequestState.Error) {
-			System.err.println("Client error, errormessage: " + resultReg.getExceptionMessage());
+			logger.error("Client error while sending PlayerMove, errormessage: " + resultReg.getExceptionMessage());
 		} else {
-			//System.err.println("Client has sent PlayerMove successfully");
+			logger.info("Client has sent PlayerMove successfully");
 		}
 	}
 }

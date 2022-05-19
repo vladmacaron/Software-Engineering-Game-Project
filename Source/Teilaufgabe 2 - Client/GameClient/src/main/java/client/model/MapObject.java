@@ -3,6 +3,9 @@ package client.model;
 import java.util.List;
 import java.util.Objects;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class MapObject {
 	private TerrainType terrainType;
 	private List<ObjectType> objectsOnField;
@@ -23,15 +26,11 @@ public class MapObject {
 	
 	public void addObjectOnField(ObjectType object) {
 		if (objectsOnField.contains(object)) {
-			//TODO throw error
+			Logger logger = LoggerFactory.getLogger(MapObject.class);
+			logger.error("Object " + object.toString() + " is already on Field");
+			throw new RuntimeException("Object " + object.toString() + " is already on Field");
 		} else {
 			objectsOnField.add(object);
-		}
-	}
-	
-	public void removeObjectFromField(ObjectType object) {
-		if (!objectsOnField.remove(object)) {
-			//TODO throw error
 		}
 	}
 

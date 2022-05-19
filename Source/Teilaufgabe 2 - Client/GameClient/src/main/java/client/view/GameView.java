@@ -3,6 +3,9 @@ package client.view;
 import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import client.model.Coordinates;
 import client.model.Map;
 import client.model.MapObject;
@@ -16,9 +19,11 @@ public class GameView {
 	public static final String COLOR_RESET = "\u001B[0m";
 	
 	private Map gameMap;
+	private Logger logger;
 	
 	public GameView(Map gameMap) {
 		this.gameMap = gameMap;
+		logger = LoggerFactory.getLogger(GameView.class);
 		gameMap.addPropertyChangeListener(mapChangedListener);
 	}
 	
@@ -78,6 +83,7 @@ public class GameView {
 			System.out.print(BLUE_BACKGROUND);
 			break;
 		default:
+			logger.warn("Terrain Type not found while printing");
 			break;
 		}
 	}
@@ -91,11 +97,9 @@ public class GameView {
 			System.out.print("E");
 			break;
 		case ENEMY_CASTLE:
-			//add color
 			System.out.print("^");
 			break;
 		case ENEMY_TREASURE:
-			//add color
 			System.out.print("$");
 			break;
 		case PLAYER:
@@ -105,6 +109,7 @@ public class GameView {
 			System.out.print("$");
 			break;
 		default:
+			logger.warn("Object Type not found while printing");
 			break;
 		}
 	}

@@ -8,41 +8,37 @@ import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import client.converter.Converter;
 import client.model.Coordinates;
 import client.model.Map;
 import client.model.MovementType;
 import client.model.ObjectType;
 import client.model.TerrainType;
+import client.network.Network;
 
 public class MapBrain {
 	Map gameMap;
-	Set<Coordinates> visitedFields;
-	Stack<MovementType> path;
 	HashMap<Coordinates, Integer> valueMapTreasure;
 	HashMap<Coordinates, Integer> valueMapCastle;
+	private Logger logger;
 	
-	public MapBrain(Map gameMap, Set<Coordinates> visitedFields) {
+	public MapBrain(Map gameMap) {
 		super();
 		this.gameMap = gameMap;
-		this.visitedFields = visitedFields;
+		this.logger = LoggerFactory.getLogger(MapBrain.class);
 		
 		valueMapTreasure = new HashMap<>();
 		valueMapCastle = new HashMap<>();
-		
-		path = new Stack<>();
-	}
-
-	public Set<Coordinates> getVisitedFields() {
-		return visitedFields;
 	}
 	
 	public void addVisitedPoint(Coordinates coord) {
-		visitedFields.add(coord);
 		valueMapTreasure.computeIfPresent(coord, (key, value) -> value + 1);
 	}
 	
-	public MovementType getPossibleMove(HashMap<Coordinates, Integer> valueMap, int minX, int minY, int maxX, int maxY) {
+	private MovementType getPossibleMove(HashMap<Coordinates, Integer> valueMap, int minX, int minY, int maxX, int maxY) {
 		Coordinates currentCoord = gameMap.getPlayerPosition();
 		int min = 999;
 		Coordinates minCoord = null;
@@ -65,38 +61,30 @@ public class MapBrain {
 							
 							if(currentX-1==neighbourX && currentY-1==neighbourY) {
 								if(!gameMap.getMapObject(upCoord).getTerrainType().equals(TerrainType.WATER)) {
-									path.push(nextMove(upCoord));
 									return nextMove(upCoord);
 								}
 								if(!gameMap.getMapObject(leftCoord).getTerrainType().equals(TerrainType.WATER)) {
-									path.push(nextMove(leftCoord));
 									return nextMove(leftCoord);
 								}
 							} else if(currentX+1==neighbourX && currentY-1==neighbourY) {
 								if(!gameMap.getMapObject(upCoord).getTerrainType().equals(TerrainType.WATER)) {
-									path.push(nextMove(upCoord));
 									return nextMove(upCoord);
 								}
 								if(!gameMap.getMapObject(rightCoord).getTerrainType().equals(TerrainType.WATER)) {
-									path.push(nextMove(rightCoord));
 									return nextMove(rightCoord);
 								}
 							} else if(currentX-1==neighbourX && currentY+1==neighbourY) {
 								if(!gameMap.getMapObject(leftCoord).getTerrainType().equals(TerrainType.WATER)) {
-									path.push(nextMove(leftCoord));
 									return nextMove(leftCoord);
 								}
 								if(!gameMap.getMapObject(downCoord).getTerrainType().equals(TerrainType.WATER)) {
-									path.push(nextMove(downCoord));
 									return nextMove(downCoord);
 								}
 							} else if(currentX+1==neighbourX && currentY+1==neighbourY) {
 								if(!gameMap.getMapObject(rightCoord).getTerrainType().equals(TerrainType.WATER)) {
-									path.push(nextMove(rightCoord));
 									return nextMove(rightCoord);
 								}
 								if(!gameMap.getMapObject(downCoord).getTerrainType().equals(TerrainType.WATER)) {
-									path.push(nextMove(downCoord));
 									return nextMove(downCoord);
 								}
 							}
@@ -109,22 +97,14 @@ public class MapBrain {
 				if(gameMap.getMapObject(neighbour).getTerrainType().equals(TerrainType.MOUNTAIN)) {
 					valueMap.computeIfPresent(neighbour, (key, value) -> value + 1);
 				}
-				/*if(visitedFields.contains(neighbour)) {
-					valueMap.computeIfPresent(neighbour, (key, value) -> value + 2);
-				}*/
 			}
 		}
 		
 		for(Coordinates neighbour: currentCoord.getNeighbours(minX, minY, maxX, maxY)) {
-			//if(canMove(currentCoord, neighbour)) {
-			//	System.out.println(valueMap.get(neighbour));
-			//}
 			if(canMove(currentCoord, neighbour) && gameMap.getMapObject(neighbour).getObjectsOnField().contains(ObjectType.TREASURE)) {
-				path.push(nextMove(neighbour));
 				return nextMove(neighbour);
 			}
 			if(canMove(currentCoord, neighbour) && gameMap.getMapObject(neighbour).getObjectsOnField().contains(ObjectType.ENEMY_CASTLE)) {
-				path.push(nextMove(neighbour));
 				return nextMove(neighbour);
 			}
 			if(canMove(currentCoord, neighbour) && valueMap.get(neighbour)<min && !gameMap.getMapObject(neighbour).getTerrainType().equals(TerrainType.WATER)) {
@@ -134,44 +114,16 @@ public class MapBrain {
 		}
 		
 		if(valueMap.get(minCoord) < valueMap.get(currentCoord)) {
-			path.push(nextMove(minCoord));
 			return nextMove(minCoord);
 		} else {
 			valueMap.computeIfPresent(currentCoord, (key, value) -> value + 5);
 			return nextMove(minCoord);
 		}
-		/*
-		valueMap.computeIfPresent(currentCoord, (key, value) -> value + 5);
-		while(path.contains(nextMove(currentCoord))) {
-			path.remove(nextMove(currentCoord));
-		}
-		
-		MovementType prevCoord = path.pop();
-		switch(prevCoord) {
-		case DOWN:
-			prevCoord = MovementType.UP;
-			break;
-		case LEFT:
-			prevCoord = MovementType.RIGHT;
-			break;
-		case RIGHT:
-			prevCoord = MovementType.LEFT;
-			break;
-		case UP:
-			prevCoord = MovementType.DOWN;
-			break;
-		default:
-			break;
-		}
-		System.out.println(prevCoord.toString());
-		path.push(prevCoord);
-		return prevCoord;*/
 	}
 	
 	public MovementType findTreasure() {
-		MovementType result = null;
 		Coordinates currentCoord = gameMap.getPlayerPosition();
-		//System.out.println("Max X: " + gameMap.getMaxColumn() + "Max Y: " + gameMap.getMaxRow());
+		
 		if(valueMapTreasure.isEmpty()) {
 			for(Coordinates coord: gameMap.getMapFields().keySet()) {
 				switch(gameMap.getMapObject(coord).getTerrainType()) {
@@ -189,22 +141,21 @@ public class MapBrain {
 					break;
 				}
 			}
+			logger.info("valueMapTreasure created");
 		}
 		if(gameMap.getMaxColumn()==15) {
 			if(currentCoord.getX()<8 && currentCoord.getY()<4) {
-				result = getPossibleMove(valueMapTreasure,0, 0, 7, 3);
+				return getPossibleMove(valueMapTreasure,0, 0, 7, 3);
 			} else {
-				result = getPossibleMove(valueMapTreasure,8, 0, gameMap.getMaxColumn(), gameMap.getMaxRow());
+				return getPossibleMove(valueMapTreasure,8, 0, gameMap.getMaxColumn(), gameMap.getMaxRow());
 			}
 		} else {
 			if(currentCoord.getX()<8 && currentCoord.getY()<4) {
-				result = getPossibleMove(valueMapTreasure, 0, 0, 7, 3);
+				return getPossibleMove(valueMapTreasure, 0, 0, 7, 3);
 			} else {
-				result = getPossibleMove(valueMapTreasure, 0, 4, gameMap.getMaxColumn(), gameMap.getMaxRow());
+				return getPossibleMove(valueMapTreasure, 0, 4, gameMap.getMaxColumn(), gameMap.getMaxRow());
 			}
 		}
-		
-		return result;
 	}
 	
 	public MovementType findCastle() {
@@ -232,25 +183,13 @@ public class MapBrain {
 				if(currentCoord.getX()<8 && currentCoord.getY()<4) {
 					for(int x=0, newValue = 160; x<8; x++, newValue -= 10) {
 						for(int y=0; y<4; y++) {
-							final int tempValueGrass = newValue-5;
-							final int tempValueNormal = newValue;
-							if(gameMap.getMapObject(new Coordinates(x, y)).getTerrainType().equals(TerrainType.GRASS)) {
-								valueMapCastle.computeIfPresent(new Coordinates(x, y), (key, value) -> value = tempValueNormal);
-							} else {
-								valueMapCastle.computeIfPresent(new Coordinates(x, y), (key, value) -> value = tempValueGrass);
-							}
+							fillValueMapCastle(newValue, x, y);
 						}
 					}
 				} else {
 					for(int x=8, newValue = 100; x<16; x++, newValue += 10) {
 						for(int y=0; y<4; y++) {
-							final int tempValueGrass = newValue-5;
-							final int tempValueNormal = newValue;
-							if(gameMap.getMapObject(new Coordinates(x, y)).getTerrainType().equals(TerrainType.GRASS)) {
-								valueMapCastle.computeIfPresent(new Coordinates(x, y), (key, value) -> value = tempValueNormal);
-							} else {
-								valueMapCastle.computeIfPresent(new Coordinates(x, y), (key, value) -> value = tempValueGrass);
-							}
+							fillValueMapCastle(newValue, x, y);
 						}
 					}
 				}
@@ -258,74 +197,34 @@ public class MapBrain {
 				if(currentCoord.getX()<8 && currentCoord.getY()<4) {
 					for(int y=0, newValue = 130; y<4; y++, newValue -= 10) {
 						for(int x=0; x<8; x++) {
-							final int tempValueGrass = newValue-5;
-							final int tempValueNormal = newValue;
-							if(gameMap.getMapObject(new Coordinates(x, y)).getTerrainType().equals(TerrainType.GRASS)) {
-								valueMapCastle.computeIfPresent(new Coordinates(x, y), (key, value) -> value = tempValueNormal);
-							} else {
-								valueMapCastle.computeIfPresent(new Coordinates(x, y), (key, value) -> value = tempValueGrass);
-							}
+							fillValueMapCastle(newValue, x, y);
 						}
 					}
 				} else {
 					for(int y=4, newValue = 100; y<8; y++, newValue += 10) {
 						for(int x=0; x<8; x++) {
-							final int tempValueGrass = newValue-5;
-							final int tempValueNormal = newValue;
-							if(gameMap.getMapObject(new Coordinates(x, y)).getTerrainType().equals(TerrainType.GRASS)) {
-								valueMapCastle.computeIfPresent(new Coordinates(x, y), (key, value) -> value = tempValueNormal);
-							} else {
-								valueMapCastle.computeIfPresent(new Coordinates(x, y), (key, value) -> value = tempValueGrass);
-							}
+							fillValueMapCastle(newValue, x, y);
 						}
 					}
 				}
 			}
+			logger.info("valueMapCastle created");
 		}
 		
 		return getPossibleMove(valueMapCastle, 0, 0, gameMap.getMaxColumn(), gameMap.getMaxRow());
 	}
 	
-	public boolean isOnTheOtherSide() {
-		Coordinates initialCoord = null;
-		Coordinates currentCoord = gameMap.getPlayerPosition();
-		for(Coordinates coord: gameMap.getMapFields().keySet()) {
-			if(gameMap.getMapObject(coord).getObjectsOnField().contains(ObjectType.CASTLE)) {
-				initialCoord = coord;
-			}
-		}
-		if(gameMap.getMaxColumn()==15) {
-			if(initialCoord.getX()<8 && initialCoord.getY()<4) {
-				if(currentCoord.getX()<8 && currentCoord.getY()<4) {
-					return false;
-				} else {
-					return true;
-				}
-			} else {
-				if(currentCoord.getX()>=8 && currentCoord.getY()>=4) {
-					return true;
-				} else {
-					return false;
-				}
-			}
+	private void fillValueMapCastle(int newValue, int x, int y) {
+		final int tempValueGrass = newValue-5;
+		final int tempValueNormal = newValue;
+		if(gameMap.getMapObject(new Coordinates(x, y)).getTerrainType().equals(TerrainType.GRASS)) {
+			valueMapCastle.computeIfPresent(new Coordinates(x, y), (key, value) -> value = tempValueNormal);
 		} else {
-			if(currentCoord.getX()<8 && currentCoord.getY()<4) {
-				if(currentCoord.getX()<8 && currentCoord.getY()<4) {
-					return false;
-				} else {
-					return true;
-				}
-			} else {
-				if(currentCoord.getX()>=8 && currentCoord.getY()>=4) {
-					return true;
-				} else {
-					return false;
-				}
-			}
+			valueMapCastle.computeIfPresent(new Coordinates(x, y), (key, value) -> value = tempValueGrass);
 		}
 	}
 	
-	public MovementType nextMove(Coordinates goal) {
+	private MovementType nextMove(Coordinates goal) {
 		Coordinates currentCoord = gameMap.getPlayerPosition();
 		MovementType move = null;
 		int currentX = currentCoord.getX();
@@ -343,6 +242,10 @@ public class MapBrain {
 			move = MovementType.DOWN;
 		}
 		
+		if(move == null) {
+			throw new NullPointerException("Move is null while getting MOvementTyoe out of goal Coordinate");
+		}
+		
 		return move;
 	}
 	
@@ -352,6 +255,7 @@ public class MapBrain {
 		int currentY = currentCoord.getY();
 		int neighbourX = neighbourCoord.getX();
 		int neighbourY = neighbourCoord.getY();
+		
 		if((currentX-1)==neighbourX && currentY==neighbourY) {
 			check = true;
 		} else if((currentX+1)==neighbourX && currentY==neighbourY) {

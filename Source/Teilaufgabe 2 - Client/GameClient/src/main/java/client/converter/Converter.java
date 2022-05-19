@@ -5,6 +5,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import MessagesBase.MessagesFromClient.EMove;
 import MessagesBase.MessagesFromClient.ETerrain;
 import MessagesBase.MessagesFromClient.HalfMap;
@@ -27,7 +30,6 @@ public class Converter {
 	public static HalfMap convertToHalfMap(String playerID, Map playerMap) {
 		List<HalfMapNode> halfMapNodes = new ArrayList<>();
 		
-		//Boolean check = true;
 		for (HashMap.Entry<Coordinates, MapObject> field : playerMap.getMapFields().entrySet()) {
 			ETerrain terrain = convertToETerrain(field.getValue().getTerrainType());
 			
@@ -48,6 +50,8 @@ public class Converter {
 				return playerState.getState();
 			}
 		}
+		Logger logger = LoggerFactory.getLogger(Converter.class);
+		logger.warn("Failed to retrieve PlayerState");
 		return EPlayerGameState.MustWait;
 	}
 	
@@ -57,6 +61,8 @@ public class Converter {
 				return playerState.hasCollectedTreasure();
 			}
 		}
+		Logger logger = LoggerFactory.getLogger(Converter.class);
+		logger.warn("Failed to retrieve Trasure status from GameState");
 		return false;
 	}
 	
@@ -97,6 +103,8 @@ public class Converter {
 			case NoPlayerPresent:
 				break;
 			default:
+				Logger logger = LoggerFactory.getLogger(Converter.class);
+				logger.warn("Unknown Player Position State received");
 				break;
 			}
 			
@@ -116,7 +124,8 @@ public class Converter {
 		case WATER:
 			return ETerrain.Water;
 		default:
-			//add exception
+			Logger logger = LoggerFactory.getLogger(Converter.class);
+			logger.warn("Unknown TerraingType received");
 			return ETerrain.Grass;
 		}
 	}
@@ -130,7 +139,8 @@ public class Converter {
 		case Water:
 			return TerrainType.WATER;
 		default:
-			//add exception
+			Logger logger = LoggerFactory.getLogger(Converter.class);
+			logger.warn("Unknown ETerrain received");
 			return TerrainType.GRASS;
 		}
 	}
@@ -147,7 +157,8 @@ public class Converter {
 		case UP:
 			return PlayerMove.of(playerID, EMove.Up);
 		default:
-			//add exception
+			Logger logger = LoggerFactory.getLogger(Converter.class);
+			logger.warn("Unknown MovementType received");
 			return new PlayerMove();
 		}
 		

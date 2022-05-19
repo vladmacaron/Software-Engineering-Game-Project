@@ -5,6 +5,8 @@ import java.beans.PropertyChangeSupport;
 import java.util.HashMap;
 import java.util.Objects;
 
+import client.exceptions.MapException;
+
 public class Map {
 	
 	private final PropertyChangeSupport changes = new PropertyChangeSupport(this);
@@ -33,14 +35,16 @@ public class Map {
 				}
 			}
 		}
-		//this.mapFields = other.mapFields;
 	}
 	
-	public void setMap(Map map) {
-		//Map beforeChange = new Map(this.getMapFields());
-		Map beforeChange = new Map(this);
-		this.mapFields = map.getMapFields();
-		changes.firePropertyChange("map", beforeChange, this);
+	public void setMap(Map map) throws MapException {
+		try {
+			Map beforeChange = new Map(this);
+			this.mapFields = map.getMapFields();
+			changes.firePropertyChange("map", beforeChange, this);
+		} catch(Exception e) {
+			throw new MapException(e.getMessage() + "failed to set Map correctly");
+		}
 	}
 
 	public HashMap<Coordinates, MapObject> getMapFields() {
@@ -60,7 +64,7 @@ public class Map {
 	}
 	
 	public Coordinates getPlayerPosition() {
-		Coordinates res = new Coordinates(0,0);
+		Coordinates res = new Coordinates(-1,-1);
 		for (HashMap.Entry<Coordinates, MapObject> field : mapFields.entrySet()) {
 			for(ObjectType objects : field.getValue().getObjectsOnField()) {
 				if(objects.equals(ObjectType.PLAYER)) {
@@ -78,6 +82,9 @@ public class Map {
                 maxKey = key;
             }
         }
+        if(maxKey == null) {
+        	throw new RuntimeException("maxKey to find max row is null, mapFields are empty");
+        }
         return maxKey.getY();
 	}
 	
@@ -87,6 +94,9 @@ public class Map {
             if (maxKey == null || key.getX() > maxKey.getX()) {
                 maxKey = key;
             }
+        }
+        if(maxKey == null) {
+        	throw new RuntimeException("maxKey to find max column is null, mapFields are empty");
         }
         return maxKey.getX();
 	}
