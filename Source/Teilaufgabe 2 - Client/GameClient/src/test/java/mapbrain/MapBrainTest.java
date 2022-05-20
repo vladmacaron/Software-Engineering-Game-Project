@@ -15,6 +15,7 @@ class MapBrainTest {
 	@Test
 	void mapbrain_test() {
 		MapBrain testBrain = Mockito.mock(MapBrain.class);
+		Coordinates coord = Mockito.mock(Coordinates.class);
 		
 		testBrain.findTreasure();
 		
@@ -23,6 +24,10 @@ class MapBrainTest {
 		testBrain.findCastle();
 		
 		Mockito.verify(testBrain).findCastle();
+		
+		testBrain.addVisitedPoint(coord);
+		
+		Mockito.verify(testBrain).addVisitedPoint(coord);
 	}
 
 }
