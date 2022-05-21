@@ -174,6 +174,7 @@ public class MapBrain {
 					valueMapCastle.put(coord, 999);
 					break;
 				default:
+					logger.warn("Received unknown type of terrain");
 					valueMapCastle.put(coord, 100);
 					break;
 				}
