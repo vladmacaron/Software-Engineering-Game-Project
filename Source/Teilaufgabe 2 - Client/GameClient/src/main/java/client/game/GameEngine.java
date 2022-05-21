@@ -40,14 +40,14 @@ public class GameEngine {
 		this.args = args;
 		
 		this.serverBaseUrl = "http://swe1.wst.univie.ac.at";
-		this.gameID = "6fNcS";
+		this.gameID = "KgdZv";
 		
 		if(args.length==3) {
 			this.serverBaseUrl = args[1];
 			this.gameID = args[2];
 		}
 		
-		Logger logger = LoggerFactory.getLogger(GameEngine.class);
+		this.logger = LoggerFactory.getLogger(GameEngine.class);
 		
 		this.network = new Network(gameID, serverBaseUrl);
 	}
@@ -76,6 +76,7 @@ public class GameEngine {
 		
 	}
 	
+	//blocking main thread for half a second to follow game rules
 	private void waitTime() {
 		try {
 		    Thread.sleep(500);

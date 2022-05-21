@@ -37,6 +37,7 @@ public class Map {
 		}
 	}
 	
+	//setting current Map, useful for updating the view
 	public void setMap(Map map) throws MapException {
 		try {
 			Map beforeChange = new Map(this);
@@ -63,6 +64,7 @@ public class Map {
 		return mapFields.get(coord);
 	}
 	
+	//getting current player position
 	public Coordinates getPlayerPosition() {
 		Coordinates res = new Coordinates(-1,-1);
 		for (HashMap.Entry<Coordinates, MapObject> field : mapFields.entrySet()) {
@@ -75,6 +77,7 @@ public class Map {
 		return res;
 	}
 	
+	//getting max Y of the map
 	public int getMaxRow() {
 		Coordinates maxKey = null;
         for (Coordinates key : mapFields.keySet()) {
@@ -88,6 +91,7 @@ public class Map {
         return maxKey.getY();
 	}
 	
+	// getting max X of the map
 	public int getMaxColumn() {
 		Coordinates maxKey = null;
         for (Coordinates key : mapFields.keySet()) {

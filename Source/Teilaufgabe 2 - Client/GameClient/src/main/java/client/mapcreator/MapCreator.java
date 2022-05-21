@@ -17,6 +17,8 @@ public class MapCreator {
 	static final int MAX_Y = 4;
 	static final int MAX_X = 8;
 	
+	//half map is created with random fields(thanks to collection shuffle), but the number of water fields
+	//and mountain fields are hardcoded
 	public static Map createPlayerMap() {
 		HashMap<Coordinates, MapObject> fields = new HashMap<>();
 		
@@ -62,10 +64,12 @@ public class MapCreator {
 		return new Map(fields);
 	}
 	
+	//validating created half map
 	public static boolean validateMap(Map playerMap) {
 		return checkIsland(playerMap) && checkBorders(playerMap);
 	}
 	
+	//checking for islands with combination of other smaller checks
 	private static boolean checkIsland(Map playerMap) {
 		HashMap<Coordinates, MapObject> fields = playerMap.getMapFields();
 		
@@ -103,6 +107,8 @@ public class MapCreator {
 		return true;
 	}
 	
+	//checking corners of the map for water fields
+	//this check is specific for checking corner island and water fields on the borders
 	private static boolean checkCorners(Map playerMap, Coordinates cornerCoord) {
 		HashMap<Coordinates, MapObject> fields = playerMap.getMapFields();
 		
@@ -116,6 +122,7 @@ public class MapCreator {
 		return countWater>0;
 	}
 	
+	//checking borders of them for water fields to follow game rules
 	private static boolean checkBorders(Map playerMap) {
 		HashMap<Coordinates, MapObject> fields = playerMap.getMapFields();
 		int countLongSide = 0, countShortSide = 0;
@@ -140,6 +147,7 @@ public class MapCreator {
 		return !(countLongSide>3 || countShortSide>1);
 	}
 	
+	//check for a specific sort of island, when we have 4 water fields in the middle of the map positioned diagonally
 	private static boolean checkDiagonal(Map playerMap) {
 		HashMap<Coordinates, MapObject> fields = playerMap.getMapFields();
 		int countWater = 0;

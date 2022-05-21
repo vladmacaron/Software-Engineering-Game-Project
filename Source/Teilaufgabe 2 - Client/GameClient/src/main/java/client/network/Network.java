@@ -41,6 +41,7 @@ public class Network {
 				.defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_XML_VALUE).build();
 	}
 	
+	//registers the player and returns its playerID
 	public String registerPlayer(String name, String surname, String uspace) {
 		PlayerRegistration registration = new PlayerRegistration(name, surname, uspace);
 		
@@ -62,6 +63,7 @@ public class Network {
 		}
 	}
 	
+	//sending created half map at the beginning of the game
 	public void sendHalfMap(Map playerMap) {
 		HalfMap halfMap = Converter.convertToHalfMap(playerID, playerMap);
 		
@@ -80,6 +82,7 @@ public class Network {
 		}
 	}
 	
+	//returning current game state
 	public Optional<GameState> getGameState() {
 		Mono<ResponseEnvelope> webAccess = baseWebClient.method(HttpMethod.GET)
 				.uri("/" + gameID + "/states/" + playerID)
@@ -96,12 +99,8 @@ public class Network {
 			return state;
 		}
 	}
-	
-	public String getPlayerID() {
-		return playerID;
-	}
 
-	//TODO
+	//sends player move
 	public void sendPlayerMove(PlayerMove move) {
 		Mono<ResponseEnvelope> webAccess = baseWebClient.method(HttpMethod.POST)
 				.uri("/" + gameID + "/moves")

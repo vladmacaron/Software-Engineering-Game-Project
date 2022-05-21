@@ -25,6 +25,7 @@ public class MapBrain {
 	HashMap<Coordinates, Integer> valueMapCastle;
 	private Logger logger;
 	
+	//we have 2 different value maps for finding treasure and castle
 	public MapBrain(Map gameMap) {
 		super();
 		this.gameMap = gameMap;
@@ -34,20 +35,31 @@ public class MapBrain {
 		valueMapCastle = new HashMap<>();
 	}
 	
+	//adding value to already visited coordinates
 	public void addVisitedPoint(Coordinates coord) {
-		valueMapTreasure.computeIfPresent(coord, (key, value) -> value + 1);
+		valueMapTreasure.computeIfPresent(coord, (key, value) -> value + 2);
 	}
 	
+	//getting next possible move of the player based on the neighbor fields values
 	private MovementType getPossibleMove(HashMap<Coordinates, Integer> valueMap, int minX, int minY, int maxX, int maxY) {
 		Coordinates currentCoord = gameMap.getPlayerPosition();
 		int min = 999;
 		Coordinates minCoord = null;
 		
+		//checking if current fields is mountain, in that case we see all neighbour fields
 		if(gameMap.getMapObject(currentCoord).getTerrainType().equals(TerrainType.MOUNTAIN)) {
 			for(Coordinates neighbour: currentCoord.getNeighbours(minX, minY, maxX, maxY)) {
+				if(gameMap.getMapObject(neighbour).getTerrainType().equals(TerrainType.MOUNTAIN) || 
+						gameMap.getMapObject(neighbour).getTerrainType().equals(TerrainType.GRASS)) {
+					valueMap.computeIfPresent(neighbour, (key, value) -> value + 1);
+				}
+				
 				if(gameMap.getMapObject(neighbour).getObjectsOnField().contains(ObjectType.TREASURE) 
 						|| gameMap.getMapObject(neighbour).getObjectsOnField().contains(ObjectType.ENEMY_CASTLE)) {
 					valueMap.computeIfPresent(neighbour, (key, value) -> value = 0);
+					
+					//this is an additional check for neighbour fields that are placed  diagonally and which we cant visit immediately
+					//but if those fields have treasure/castle we will move closer to them
 					if(!canMove(currentCoord, neighbour)) {
 						int currentX = currentCoord.getX();
 						int currentY = currentCoord.getY();
@@ -56,50 +68,45 @@ public class MapBrain {
 						Coordinates downCoord = new Coordinates(currentX, currentY+1);
 						Coordinates rightCoord = new Coordinates(currentX+1, currentY);
 						
-							int neighbourX = neighbour.getX();
-							int neighbourY = neighbour.getY(); 
+						int neighbourX = neighbour.getX();
+						int neighbourY = neighbour.getY(); 
 							
-							if(currentX-1==neighbourX && currentY-1==neighbourY) {
-								if(!gameMap.getMapObject(upCoord).getTerrainType().equals(TerrainType.WATER)) {
-									return nextMove(upCoord);
-								}
-								if(!gameMap.getMapObject(leftCoord).getTerrainType().equals(TerrainType.WATER)) {
-									return nextMove(leftCoord);
-								}
-							} else if(currentX+1==neighbourX && currentY-1==neighbourY) {
-								if(!gameMap.getMapObject(upCoord).getTerrainType().equals(TerrainType.WATER)) {
-									return nextMove(upCoord);
-								}
-								if(!gameMap.getMapObject(rightCoord).getTerrainType().equals(TerrainType.WATER)) {
-									return nextMove(rightCoord);
-								}
-							} else if(currentX-1==neighbourX && currentY+1==neighbourY) {
-								if(!gameMap.getMapObject(leftCoord).getTerrainType().equals(TerrainType.WATER)) {
-									return nextMove(leftCoord);
-								}
-								if(!gameMap.getMapObject(downCoord).getTerrainType().equals(TerrainType.WATER)) {
-									return nextMove(downCoord);
-								}
-							} else if(currentX+1==neighbourX && currentY+1==neighbourY) {
-								if(!gameMap.getMapObject(rightCoord).getTerrainType().equals(TerrainType.WATER)) {
-									return nextMove(rightCoord);
-								}
-								if(!gameMap.getMapObject(downCoord).getTerrainType().equals(TerrainType.WATER)) {
-									return nextMove(downCoord);
-								}
+						if(currentX-1==neighbourX && currentY-1==neighbourY) {
+							if(!gameMap.getMapObject(upCoord).getTerrainType().equals(TerrainType.WATER)) {
+								return nextMove(upCoord);
+							}
+							if(!gameMap.getMapObject(leftCoord).getTerrainType().equals(TerrainType.WATER)) {
+								return nextMove(leftCoord);
+							}
+						} else if(currentX+1==neighbourX && currentY-1==neighbourY) {
+							if(!gameMap.getMapObject(upCoord).getTerrainType().equals(TerrainType.WATER)) {
+								return nextMove(upCoord);
+							}
+							if(!gameMap.getMapObject(rightCoord).getTerrainType().equals(TerrainType.WATER)) {
+								return nextMove(rightCoord);
+							}
+						} else if(currentX-1==neighbourX && currentY+1==neighbourY) {
+							if(!gameMap.getMapObject(leftCoord).getTerrainType().equals(TerrainType.WATER)) {
+								return nextMove(leftCoord);
+							}
+							if(!gameMap.getMapObject(downCoord).getTerrainType().equals(TerrainType.WATER)) {
+								return nextMove(downCoord);
+							}
+						} else if(currentX+1==neighbourX && currentY+1==neighbourY) {
+							if(!gameMap.getMapObject(rightCoord).getTerrainType().equals(TerrainType.WATER)) {
+								return nextMove(rightCoord);
+							}
+							if(!gameMap.getMapObject(downCoord).getTerrainType().equals(TerrainType.WATER)) {
+								return nextMove(downCoord);
 							}
 						}
+					}
 					
-				} else {
-					valueMap.computeIfPresent(neighbour, (key, value) -> value + 1);
-				}
-				
-				if(gameMap.getMapObject(neighbour).getTerrainType().equals(TerrainType.MOUNTAIN)) {
-					valueMap.computeIfPresent(neighbour, (key, value) -> value + 1);
 				}
 			}
 		}
 		
+		//getting field either if castle/treasure or with the min value
 		for(Coordinates neighbour: currentCoord.getNeighbours(minX, minY, maxX, maxY)) {
 			if(canMove(currentCoord, neighbour) && gameMap.getMapObject(neighbour).getObjectsOnField().contains(ObjectType.TREASURE)) {
 				return nextMove(neighbour);
@@ -113,14 +120,64 @@ public class MapBrain {
 			}
 		}
 		
+		//if the current fields value is less than min, then we put this fields value higher
+		//so that we will not go back to it
 		if(valueMap.get(minCoord) < valueMap.get(currentCoord)) {
 			return nextMove(minCoord);
 		} else {
 			valueMap.computeIfPresent(currentCoord, (key, value) -> value + 5);
+			for(Coordinates neighbour: currentCoord.getNeighbours(minX, minY, maxX, maxY)) {
+				if(valueMap.get(neighbour)<min) {
+					if(!canMove(currentCoord, neighbour)) {
+						int currentX = currentCoord.getX();
+						int currentY = currentCoord.getY();
+						Coordinates upCoord = new Coordinates(currentX, currentY-1);
+						Coordinates leftCoord = new Coordinates(currentX-1, currentY);
+						Coordinates downCoord = new Coordinates(currentX, currentY+1);
+						Coordinates rightCoord = new Coordinates(currentX+1, currentY);
+						
+						int neighbourX = neighbour.getX();
+						int neighbourY = neighbour.getY(); 
+							
+						if(currentX-1==neighbourX && currentY-1==neighbourY) {
+							if(!gameMap.getMapObject(upCoord).getTerrainType().equals(TerrainType.WATER)) {
+								return nextMove(upCoord);
+							}
+							if(!gameMap.getMapObject(leftCoord).getTerrainType().equals(TerrainType.WATER)) {
+								return nextMove(leftCoord);
+							}
+						} else if(currentX+1==neighbourX && currentY-1==neighbourY) {
+							if(!gameMap.getMapObject(upCoord).getTerrainType().equals(TerrainType.WATER)) {
+								return nextMove(upCoord);
+							}
+							if(!gameMap.getMapObject(rightCoord).getTerrainType().equals(TerrainType.WATER)) {
+								return nextMove(rightCoord);
+							}
+						} else if(currentX-1==neighbourX && currentY+1==neighbourY) {
+							if(!gameMap.getMapObject(leftCoord).getTerrainType().equals(TerrainType.WATER)) {
+								return nextMove(leftCoord);
+							}
+							if(!gameMap.getMapObject(downCoord).getTerrainType().equals(TerrainType.WATER)) {
+								return nextMove(downCoord);
+							}
+						} else if(currentX+1==neighbourX && currentY+1==neighbourY) {
+							if(!gameMap.getMapObject(rightCoord).getTerrainType().equals(TerrainType.WATER)) {
+								return nextMove(rightCoord);
+							}
+							if(!gameMap.getMapObject(downCoord).getTerrainType().equals(TerrainType.WATER)) {
+								return nextMove(downCoord);
+							}
+						}
+					}
+				}
+			}
 			return nextMove(minCoord);
 		}
-	}
+	} 
 	
+	//before finding treasure we are populating value map with values, water fields are 999 so that we will not move to them
+	//after that based on our current position, we will get neighbour fields only in the half map we are at
+	//based on the rules of the game, only there we could find treasure
 	public MovementType findTreasure() {
 		Coordinates currentCoord = gameMap.getPlayerPosition();
 		
@@ -131,7 +188,7 @@ public class MapBrain {
 					valueMapTreasure.put(coord, 0);
 					break;
 				case MOUNTAIN:
-					valueMapTreasure.put(coord, 0);
+					valueMapTreasure.put(coord, 1);
 					break;
 				case WATER:
 					valueMapTreasure.put(coord, 999);
@@ -158,6 +215,9 @@ public class MapBrain {
 		}
 	}
 	
+	//before we try to find enemy castle we populate value map for castle with values similar to trasure value map
+	//then based on the current position of the player we populate this half of map with high values that are decreasing 
+	//closer to the opposite half of the map, as based on the game rules castle could be only on the enemy side
 	public MovementType findCastle() {
 		Coordinates currentCoord = gameMap.getPlayerPosition();
 		
@@ -168,7 +228,7 @@ public class MapBrain {
 					valueMapCastle.put(coord, 0);
 					break;
 				case MOUNTAIN:
-					valueMapCastle.put(coord, 0);
+					valueMapCastle.put(coord, 1);
 					break;
 				case WATER:
 					valueMapCastle.put(coord, 999);
@@ -215,6 +275,7 @@ public class MapBrain {
 		return getPossibleMove(valueMapCastle, 0, 0, gameMap.getMaxColumn(), gameMap.getMaxRow());
 	}
 	
+	//helper function to fill value map for finding castle
 	private void fillValueMapCastle(int newValue, int x, int y) {
 		final int tempValueGrass = newValue-5;
 		final int tempValueNormal = newValue;
@@ -225,6 +286,7 @@ public class MapBrain {
 		}
 	}
 	
+	//based on the goal coordinates we are getting type of move
 	private MovementType nextMove(Coordinates goal) {
 		Coordinates currentCoord = gameMap.getPlayerPosition();
 		MovementType move = null;
@@ -250,6 +312,7 @@ public class MapBrain {
 		return move;
 	}
 	
+	//checking if we can go to the neighbour coordinates directly with existing type of move
 	private boolean canMove(Coordinates currentCoord, Coordinates neighbourCoord) {
 		boolean check = false;
 		int currentX = currentCoord.getX();
