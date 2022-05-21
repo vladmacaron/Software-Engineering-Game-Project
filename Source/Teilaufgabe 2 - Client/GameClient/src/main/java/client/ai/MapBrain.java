@@ -37,7 +37,7 @@ public class MapBrain {
 	
 	//adding value to already visited coordinates
 	public void addVisitedPoint(Coordinates coord) {
-		valueMapTreasure.computeIfPresent(coord, (key, value) -> value + 2);
+		valueMapTreasure.computeIfPresent(coord, (key, value) -> value + 1);
 	}
 	
 	//getting next possible move of the player based on the neighbor fields values
