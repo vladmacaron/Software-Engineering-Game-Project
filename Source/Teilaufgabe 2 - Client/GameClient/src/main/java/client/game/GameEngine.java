@@ -40,7 +40,7 @@ public class GameEngine {
 		this.args = args;
 		
 		this.serverBaseUrl = "http://swe1.wst.univie.ac.at";
-		this.gameID = "gA3DU";
+		this.gameID = "VEhDK";
 		
 		if(args.length==3) {
 			this.serverBaseUrl = args[1];
