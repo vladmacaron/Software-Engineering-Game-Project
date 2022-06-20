@@ -22,13 +22,16 @@ import org.springframework.web.bind.annotation.RestController;
 import MessagesBase.ResponseEnvelope;
 import MessagesBase.UniqueGameIdentifier;
 import MessagesBase.UniquePlayerIdentifier;
+import MessagesBase.MessagesFromClient.ERequestState;
 import MessagesBase.MessagesFromClient.HalfMap;
 import MessagesBase.MessagesFromClient.PlayerRegistration;
 import MessagesBase.MessagesFromServer.EPlayerGameState;
 import MessagesBase.MessagesFromServer.PlayerState;
 import game.Game;
+import game.GameRules;
 import game.IDCheck;
 import game.IDCreator;
+import map.HalfMapRules;
 import server.exceptions.GameIdException;
 import server.exceptions.GenericExampleException;
 import server.exceptions.NumberOfPlayersException;
@@ -90,24 +93,26 @@ public class ServerEndpoints {
 	
 	// receive player HalfMap
 	@RequestMapping(value = "/{gameID}/halfmaps", method = RequestMethod.POST, consumes = MediaType.APPLICATION_XML_VALUE, produces = MediaType.APPLICATION_XML_VALUE)
-	public @ResponseBody ResponseEnvelope<String> receiveHalfMap(
+	public @ResponseBody ResponseEnvelope<?> receiveHalfMap(
 			@Validated @PathVariable UniqueGameIdentifier gameID,
 			@Validated @RequestBody HalfMap halfMap) {
 		
 		try {
+			Game currentGame = gamesList.get(gameID.getUniqueGameID());
 			IDCheck.checkGameID(gamesList.keySet(), gameID.getUniqueGameID());
-			IDCheck.checkPlayerID(gamesList.get(gameID.getUniqueGameID()), halfMap.getUniquePlayerID());
+			IDCheck.checkPlayerID(currentGame, halfMap.getUniquePlayerID());
+			HalfMapRules.checkHalfMap(halfMap);
+			GameRules.checkBothPlayersAreRegistered(currentGame);
+			if(currentGame.getLastTurnTime()!=null) {
+				GameRules.checkTimeRule(currentGame.getLastTurnTime());
+			}
 			
-		} catch(GameIdException e) {
-			throw new GenericExampleException(e.getErrorName(), e.getLocalizedMessage());
-		} catch(PlayerIdException e) {
-			throw new GenericExampleException(e.getErrorName(), e.getLocalizedMessage());
-		} catch(UniquePlayerIdException e) {
+			gamesList.get(gameID.getUniqueGameID()).addHalfMap(halfMap);
+		} catch(GenericExampleException e) {
 			throw new GenericExampleException(e.getErrorName(), e.getLocalizedMessage());
 		}
 		
-		ResponseEnvelope<String> halfMapMessage = new ResponseEnvelope<String>("Succesfull");
-		return halfMapMessage;
+		return new ResponseEnvelope<>();
 	}
 
 	/*

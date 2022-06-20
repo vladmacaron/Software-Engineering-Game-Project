@@ -1,7 +1,10 @@
 package game;
 
+import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import MessagesBase.UniqueGameIdentifier;
 import MessagesBase.MessagesFromClient.HalfMap;
@@ -15,22 +18,28 @@ import server.exceptions.UniquePlayerIdException;
 public class Game {
 	private UniqueGameIdentifier gameID;
 	private String gameStateID;
-	private List<PlayerState> players;
+	private Set<PlayerState> players;
 	private List<HalfMap> playersHalfMaps;
 	private FullMap fullMap;
 	private int currentTurn;
+	private LocalTime lastTurnTime;
 	
 	public Game(UniqueGameIdentifier gameID) {
 		this.gameID = gameID;
 		this.gameStateID = gameID.getUniqueGameID();
-		this.players = new ArrayList<>();
+		this.players = new HashSet<>();
 		this.playersHalfMaps = new ArrayList<>();
 		this.fullMap = new FullMap();
 		this.currentTurn = 0;
+		this.lastTurnTime = null;
 	}
 	
-	public List<PlayerState> getPlayers() {
+	public Set<PlayerState> getPlayers() {
 		return players;
+	}
+	
+	public LocalTime getLastTurnTime() {
+		return lastTurnTime;
 	}
  	
 	public void addPlayer(PlayerState player) {
@@ -45,6 +54,10 @@ public class Game {
 	}
 	
 	public void addHalfMap(HalfMap halfMap) {
-		HalfMapRules.checkHalfMap(halfMap);
+		//HalfMapRules.checkHalfMap(halfMap);
+		
+		playersHalfMaps.add(halfMap);
+		currentTurn++;
+		lastTurnTime = LocalTime.now();
 	}
 }

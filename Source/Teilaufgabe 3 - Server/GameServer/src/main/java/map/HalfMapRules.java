@@ -9,17 +9,22 @@ import MessagesBase.MessagesFromClient.ETerrain;
 import MessagesBase.MessagesFromClient.HalfMap;
 import MessagesBase.MessagesFromClient.HalfMapNode;
 import server.exceptions.FieldTypeException;
+import server.exceptions.GenericExampleException;
 import server.exceptions.HalfMapCastleException;
 import server.exceptions.IslandException;
 import server.exceptions.NumberOfFieldsException;
 import server.exceptions.WaterBordersException;
 
 public class HalfMapRules {
-	public static void checkHalfMap(HalfMap halfMap) {
-		
+	public static void checkHalfMap(HalfMap halfMap) throws GenericExampleException {
+		checkFieldsType(halfMap);
+		checkCastle(halfMap);
+		checkNumberOfFields(halfMap);
+		checkBorders(halfMap);
+		checkIsland(halfMap);
 	}
 	
-	private void checkFieldsType(HalfMap halfMap) {
+	private static void checkFieldsType(HalfMap halfMap) throws FieldTypeException {
 		int countWaterFields = 0;
 		int countMountainFields = 0;
 		int countGrassFields = 0; 
@@ -49,7 +54,7 @@ public class HalfMapRules {
 		}
 	}
 	
-	private void checkCastle(HalfMap halfMap) {
+	private static void checkCastle(HalfMap halfMap) throws HalfMapCastleException {
 		int countCastle = 0;
 		for(HalfMapNode node: halfMap.getMapNodes()) {
 			if(node.isFortPresent()) {
@@ -64,7 +69,7 @@ public class HalfMapRules {
 		}
 	}
 	
-	private void checkNumberOfFields(HalfMap halfMap) {
+	private static void checkNumberOfFields(HalfMap halfMap) throws NumberOfFieldsException {
 		Set<HalfMapNode> nodes = new HashSet<>(halfMap.getMapNodes());
 		if(nodes.size()!=32) {
 			throw new NumberOfFieldsException("Number of fields check", "Map does not contain 32 fields");
@@ -79,26 +84,34 @@ public class HalfMapRules {
 		}
 	}
 	
-	private void checkBorders(HalfMap halfMap) {
-		int shortSide = 0;
-		int longSide = 0;
+	private static void checkBorders(HalfMap halfMap) throws WaterBordersException {
+		int shortLeftSide = 0;
+		int shortRightSide = 0;
+		int longUpperSide = 0;
+		int longDownSide = 0;
 		for(HalfMapNode node: halfMap.getMapNodes()) {
-			if(node.getX()==0 || node.getX()==7) {
-				shortSide++;
+			if(node.getX()==0 && node.getTerrain().equals(ETerrain.Water)) {
+				shortLeftSide++;
 			}
-			if(node.getY()==0 || node.getY()==3) {
-				longSide++;
+			if(node.getX()==7 && node.getTerrain().equals(ETerrain.Water)) {
+				shortRightSide++;
+			}
+			if(node.getY()==0 && node.getTerrain().equals(ETerrain.Water)) {
+				longUpperSide++;
+			}
+			if(node.getY()==3 && node.getTerrain().equals(ETerrain.Water)) {
+				longDownSide++;
 			}
 		}
-		if(shortSide > 1) {
+		if(shortLeftSide > 1 || shortRightSide > 1) {
 			throw new WaterBordersException("Water Borders check", "More than 1 water field on the short side of the map");
 		}
-		if(longSide > 3) {
+		if(longUpperSide > 3 || longDownSide > 3) {
 			throw new WaterBordersException("Water Borders check", "More than 3 water fields on the long side of the map");
 		}
 	}
 	
-	private void checkIsland(HalfMap halfMap) {
+	private static void checkIsland(HalfMap halfMap) throws IslandException {
 		HalfMapNode startingNode = new HalfMapNode();
 		for(HalfMapNode node: halfMap.getMapNodes()) {
 			if(!node.getTerrain().equals(ETerrain.Water)) {
@@ -107,6 +120,7 @@ public class HalfMapRules {
 			}
 		}
 		Set<HalfMapNode> originalHalfMap = new HashSet<>(halfMap.getMapNodes());
+		originalHalfMap.removeIf(n -> (n.getTerrain().equals(ETerrain.Water)));
 		Set<HalfMapNode> testMap = new HashSet<>();
 		floodFill(startingNode, halfMap, testMap);
 		if(!originalHalfMap.equals(testMap)) {
@@ -115,7 +129,7 @@ public class HalfMapRules {
 	}
 	
 	//here using floodfill algorithm, idea taken from https://www.geeksforgeeks.org/flood-fill-algorithm-implement-fill-paint/
-	private void floodFill(HalfMapNode node, HalfMap halfMap, Collection<HalfMapNode> visitedNodes) {
+	private static void floodFill(HalfMapNode node, HalfMap halfMap, Collection<HalfMapNode> visitedNodes) {
 		if(!node.getTerrain().equals(ETerrain.Water)) {
 			visitedNodes.add(node);
 			
@@ -134,7 +148,7 @@ public class HalfMapRules {
 		}
 	}
 	
-	private HalfMapNode getNode(int x, int y, HalfMap halfMap) {
+	private static HalfMapNode getNode(int x, int y, HalfMap halfMap) {
 		HalfMapNode res = new HalfMapNode();
 		for(HalfMapNode node: halfMap.getMapNodes()) {
 			if(node.getX()==x && node.getY()==y) {
