@@ -7,6 +7,7 @@ import MessagesBase.UniqueGameIdentifier;
 import MessagesBase.MessagesFromClient.HalfMap;
 import MessagesBase.MessagesFromServer.FullMap;
 import MessagesBase.MessagesFromServer.PlayerState;
+import map.HalfMapRules;
 import server.exceptions.GenericExampleException;
 import server.exceptions.NumberOfPlayersException;
 import server.exceptions.UniquePlayerIdException;
@@ -44,6 +45,6 @@ public class Game {
 	}
 	
 	public void addHalfMap(HalfMap halfMap) {
-		
+		HalfMapRules.checkHalfMap(halfMap);
 	}
 }
