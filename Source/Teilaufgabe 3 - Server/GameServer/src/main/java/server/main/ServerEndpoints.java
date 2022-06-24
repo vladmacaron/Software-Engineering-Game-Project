@@ -69,6 +69,7 @@ public class ServerEndpoints {
 		UniqueGameIdentifier gameIdentifier = new UniqueGameIdentifier(gameID);
 		Game newGame = new Game(gameIdentifier);
 		gamesList.put(gameID, newGame);
+		
 		return gameIdentifier;
 	}
 

@@ -3,8 +3,10 @@ package game;
 import java.time.LocalTime;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
@@ -12,6 +14,7 @@ import java.util.UUID;
 
 import MessagesBase.UniqueGameIdentifier;
 import MessagesBase.UniquePlayerIdentifier;
+import MessagesBase.MessagesFromClient.ETerrain;
 import MessagesBase.MessagesFromClient.HalfMap;
 import MessagesBase.MessagesFromServer.EFortState;
 import MessagesBase.MessagesFromServer.EPlayerGameState;
@@ -35,7 +38,7 @@ public class Game {
 	private String gameStateID;
 	private List<PlayerState> players;
 	private List<HalfMap> playersHalfMaps;
-	private FullMap fullMap;
+	private Map<String, FullMap> fullMap;
 	private int currentTurn;
 	private LocalTime lastTurnTime;
 	private String currentPlayerID;
@@ -45,7 +48,7 @@ public class Game {
 		this.gameStateID = gameID.getUniqueGameID();
 		this.players = new ArrayList<>();
 		this.playersHalfMaps = new ArrayList<>();
-		this.fullMap = new FullMap();
+		this.fullMap = new HashMap<>();
 		this.currentTurn = 0;
 		this.lastTurnTime = null;
 		this.currentPlayerID = "";
@@ -72,6 +75,7 @@ public class Game {
 		gameStateID = gameStateID+1;
 		
 		if(players.size()==2 && currentPlayerID.isBlank()) {
+			System.out.println("add Player");
 			List<PlayerState> tempPlayers = new ArrayList<>();
 			int firstPlayerIndex = new Random().nextInt(2);
 			int secondPlayerIndex = 0;
@@ -98,13 +102,13 @@ public class Game {
 	}
 	
 	public void addHalfMap(HalfMap halfMap) {
-		System.out.println("add half map entry");
-		if(playersHalfMaps.size() >= 2) {
+		if(playersHalfMaps.size() == 2) {
 			throw new NumberOfHalfMapsException("Number of HalfMaps check", "Game already received 2 HalfMaps");
 		}
 		for(HalfMap checkHalfMap: playersHalfMaps) {
 			if(checkHalfMap.getUniquePlayerID().equals(halfMap.getUniquePlayerID())) {
 				setEndGame(halfMap.getUniquePlayerID());
+				System.out.println("CHECK " + gameID);
 				throw new NumberOfHalfMapsException("Number of HalfMaps check", "Player cannot send HalfMap more than 1 time");
 			}
 		}
@@ -113,25 +117,21 @@ public class Game {
 			throw new TurnBasedException("Turn Based check", "This is not your turn");
 		}
 		
-		System.out.println(playersHalfMaps.size());
-		System.out.println("GameID: " + gameID + " PlayerID: " + currentPlayerID);
-		
-		changeCurrentPlayerID();
-		switchPlayers();
-		
 		playersHalfMaps.add(halfMap);
 		
 		System.out.println("GameID: " + gameID + " PlayerID: " + currentPlayerID);
 		System.out.println(playersHalfMaps.size());
 		
-		if(playersHalfMaps.size() == 2) {
-			AbstractMap.SimpleEntry<FullMap, String> fullMapAndPlayerIDPair = FullMapCreator.createFullMap(playersHalfMaps);
-			fullMap = fullMapAndPlayerIDPair.getKey();
-			//currentPlayerID = fullMapAndPlayerIDPair.getValue();
-		}
+		changeCurrentPlayerID();
+		switchPlayers();
 		
 		currentTurn++;
 		gameStateID = gameStateID+1;
+		
+		if(playersHalfMaps.size() == 2) {
+			fullMap = FullMapCreator.createFullMap(playersHalfMaps);
+			//currentPlayerID = fullMapAndPlayerIDPair.getValue();
+		}
 		
 		lastTurnTime = LocalTime.now();
 	}
@@ -155,23 +155,22 @@ public class Game {
 			return new GameState(hidePlayerID(playerID.getUniquePlayerID()), gameStateID);
 		}
 		
-		boolean shouldSwitchMap = false;
+		GameState gameState = new GameState();
 		
-		if(!currentPlayerID.equals(playerID.getUniquePlayerID())) {
-			shouldSwitchMap = true;
+		if(currentTurn<21) {
+			Map<String, FullMap> tempMaps = getRandomEnemyPosition(playerID.getUniquePlayerID());
+			gameState = new GameState(Optional.of(tempMaps.get(playerID.getUniquePlayerID())), hidePlayerID(playerID.getUniquePlayerID()), gameStateID);
+		} else {
+			gameState = new GameState(Optional.of(fullMap.get(playerID.getUniquePlayerID())), hidePlayerID(playerID.getUniquePlayerID()), gameStateID);
 		}
 		
-		if(shouldSwitchMap) {
-			fullMap = changeMapForPlayer();
-		}
+		//changeCurrentPlayerID();
+		//switchPlayers();
 		
-		changeCurrentPlayerID();
-		switchPlayers();
+		//currentTurn++;
+		//gameStateID = gameStateID+1;
 		
-		currentTurn++;
-		gameStateID = gameStateID+1;
-		
-		return new GameState(Optional.of(fullMap), hidePlayerID(playerID.getUniquePlayerID()), gameStateID);
+		return gameState;
 	}
 	
 	private PlayerState getPlayerState(String playerID) {
@@ -251,57 +250,105 @@ public class Game {
 		return tempPlayers;
 	}
 	
-	private FullMap changeMapForPlayer() {
-		Set<FullMapNode> newMapNodes = new HashSet<>();
-		for(FullMapNode node: fullMap.getMapNodes()) {
-			if(node.getPlayerPositionState().equals(EPlayerPositionState.MyPlayerPosition)) {
-				newMapNodes.add(new FullMapNode(node.getTerrain(),
-							EPlayerPositionState.EnemyPlayerPosition, 
-							node.getTreasureState(), 
-							node.getFortState(), 
-							node.getX(), 
-							node.getY()));
-			} else if(node.getPlayerPositionState().equals(EPlayerPositionState.EnemyPlayerPosition)) {
-				newMapNodes.add(new FullMapNode(node.getTerrain(),
-							EPlayerPositionState.MyPlayerPosition, 
-							node.getTreasureState(), 
-							node.getFortState(), 
-							node.getX(), 
-							node.getY()));
-			} else {
-				newMapNodes.add(new FullMapNode(node.getTerrain(),
-							node.getPlayerPositionState(), 
-							node.getTreasureState(), 
-							node.getFortState(), 
-							node.getX(), 
-							node.getY()));
+	private Map<String, FullMap> getRandomEnemyPosition(String playerID) {
+		Set<FullMapNode> mapNodeFirstPlayer = new HashSet<>();
+		Set<FullMapNode> mapNodeSecondPlayer = new HashSet<>();
+		
+		int maxX = 0;
+		int maxY = 0;
+		for(FullMapNode node: fullMap.get(playerID).getMapNodes()) {
+			if(node.getX()>maxX) {
+				maxX = node.getX();
+			}
+			if(node.getY()>maxY) {
+				maxY = node.getY();
 			}
 		}
-		for(FullMapNode node: newMapNodes) {
-			if(node.getFortState().equals(EFortState.MyFortPresent)) {
-				newMapNodes.add(new FullMapNode(node.getTerrain(),
-							node.getPlayerPositionState(), 
-							node.getTreasureState(), 
-							EFortState.NoOrUnknownFortState, 
-							node.getX(), 
-							node.getY()));
-			} else if(node.getFortState().equals(EFortState.EnemyFortPresent)) {
-				newMapNodes.add(new FullMapNode(node.getTerrain(),
-							node.getPlayerPositionState(), 
-							node.getTreasureState(), 
-							EFortState.MyFortPresent, 
-							node.getX(), 
-							node.getY()));
+		
+		int randomX = new Random().nextInt(maxX+1);
+		int randomY = new Random().nextInt(maxY+1);
+		
+		while(!getMapNode(randomX, randomY, fullMap.get(playerID)).getTerrain().equals(ETerrain.Grass)) {
+			randomX = new Random().nextInt(maxX+1);
+			randomY = new Random().nextInt(maxY+1);
+		}
+		
+		for(FullMapNode node: fullMap.get(playerID).getMapNodes()) {
+			if(node.getX() == randomX && node.getY() == randomY) {
+				if(node.getPlayerPositionState().equals(EPlayerPositionState.MyPlayerPosition)) {
+					mapNodeFirstPlayer.add(new FullMapNode(node.getTerrain(),
+													EPlayerPositionState.BothPlayerPosition, 
+													node.getTreasureState(), 
+													node.getFortState(), 
+													node.getX(), 
+													node.getY()));
+				} else {
+					mapNodeFirstPlayer.add(new FullMapNode(node.getTerrain(),
+													EPlayerPositionState.EnemyPlayerPosition, 
+													node.getTreasureState(), 
+													node.getFortState(), 
+													node.getX(), 
+													node.getY()));
+				}
 			} else {
-				newMapNodes.add(new FullMapNode(node.getTerrain(),
-							node.getPlayerPositionState(), 
-							node.getTreasureState(), 
-							node.getFortState(), 
-							node.getX(), 
-							node.getY()));
+				mapNodeFirstPlayer.add(new FullMapNode(node.getTerrain(),
+												node.getPlayerPositionState(), 
+												node.getTreasureState(), 
+												node.getFortState(), 
+												node.getX(), 
+												node.getY()));
 			}
 		}
+		
+		String otherPlayerID = "";
+		
+		for(PlayerState player: players) {
+			if(!player.getUniquePlayerID().equals(playerID)) {
+				otherPlayerID = player.getUniquePlayerID();
+				break;
+			}
+		}
+		
+		for(FullMapNode node: fullMap.get(otherPlayerID).getMapNodes()) {
+			if(node.getX() == randomX && node.getY() == randomY) {
+				if(node.getPlayerPositionState().equals(EPlayerPositionState.MyPlayerPosition)) {
+					mapNodeSecondPlayer.add(new FullMapNode(node.getTerrain(),
+													EPlayerPositionState.BothPlayerPosition, 
+													node.getTreasureState(), 
+													node.getFortState(), 
+													node.getX(), 
+													node.getY()));
+				} else {
+					mapNodeSecondPlayer.add(new FullMapNode(node.getTerrain(),
+													EPlayerPositionState.EnemyPlayerPosition, 
+													node.getTreasureState(), 
+													node.getFortState(), 
+													node.getX(), 
+													node.getY()));
+				}
+			} else {
+				mapNodeSecondPlayer.add(new FullMapNode(node.getTerrain(),
+												node.getPlayerPositionState(), 
+												node.getTreasureState(), 
+												node.getFortState(), 
+												node.getX(), 
+												node.getY()));
+			}
+		}
+		
+		Map<String, FullMap> tempFullMaps = new HashMap<>();
+		tempFullMaps.put(playerID, new FullMap(mapNodeFirstPlayer));
+		tempFullMaps.put(otherPlayerID, new FullMap(mapNodeSecondPlayer));
 
-		return new FullMap(newMapNodes);
+		return tempFullMaps;
+	}
+	
+	private FullMapNode getMapNode(int x, int y, FullMap fullMap) {
+		for(FullMapNode node: fullMap.getMapNodes()) {
+			if(node.getX()==x && node.getY()==y) {
+				return node;
+			}
+		}
+		return new FullMapNode();
 	}
 }

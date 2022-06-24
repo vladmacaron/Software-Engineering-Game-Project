@@ -1,8 +1,10 @@
 package map;
 
 import java.util.AbstractMap;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
@@ -16,7 +18,7 @@ import MessagesBase.MessagesFromServer.FullMapNode;
 
 public class FullMapCreator {
 	
-	public static AbstractMap.SimpleEntry<FullMap, String>  createFullMap(List<HalfMap> playersHalfMaps) {
+	public static Map<String, FullMap>  createFullMap(List<HalfMap> playersHalfMaps) {
 		boolean mapIsSquare = new Random().nextBoolean();
 		int XShiftBy = 0;
 		int YShiftBy = 0;
@@ -26,24 +28,34 @@ public class FullMapCreator {
 			secondMap=1;
 		}
 		
-		Set<FullMapNode> mapNodes = new HashSet<>();
+		Map<String, FullMap> fullMaps = new HashMap<>();
+		Set<FullMapNode> mapNodesFirstPlayer = new HashSet<>();
+		Set<FullMapNode> mapNodesSecondPlayer = new HashSet<>();
 		
 		for(HalfMapNode node: playersHalfMaps.get(firstMap).getMapNodes()) {
 			if(node.isFortPresent()) {
-				mapNodes.add(new FullMapNode(node.getTerrain(),
+				mapNodesFirstPlayer.add(new FullMapNode(node.getTerrain(),
 											EPlayerPositionState.MyPlayerPosition, 
 											ETreasureState.NoOrUnknownTreasureState, 
 											EFortState.MyFortPresent, 
 											node.getX(), 
 											node.getY()));
 			} else {
-				mapNodes.add(new FullMapNode(node.getTerrain(),
+				mapNodesFirstPlayer.add(new FullMapNode(node.getTerrain(),
 											EPlayerPositionState.NoPlayerPresent, 
 											ETreasureState.NoOrUnknownTreasureState, 
 											EFortState.NoOrUnknownFortState, 
 											node.getX(), 
 											node.getY()));
 			}
+		}
+		for(HalfMapNode node: playersHalfMaps.get(firstMap).getMapNodes()) {
+				mapNodesSecondPlayer.add(new FullMapNode(node.getTerrain(),
+											EPlayerPositionState.NoPlayerPresent, 
+											ETreasureState.NoOrUnknownTreasureState, 
+											EFortState.NoOrUnknownFortState, 
+											node.getX(), 
+											node.getY()));
 		}
 		
 		if(mapIsSquare) {
@@ -53,15 +65,23 @@ public class FullMapCreator {
 		}
 		
 		for(HalfMapNode node: playersHalfMaps.get(secondMap).getMapNodes()) {
-			if(node.isFortPresent()) {
-				mapNodes.add(new FullMapNode(node.getTerrain(),
-											EPlayerPositionState.EnemyPlayerPosition, 
+				mapNodesFirstPlayer.add(new FullMapNode(node.getTerrain(),
+											EPlayerPositionState.NoPlayerPresent, 
 											ETreasureState.NoOrUnknownTreasureState, 
-											EFortState.EnemyFortPresent, 
+											EFortState.NoOrUnknownFortState, 
+											node.getX()+XShiftBy, 
+											node.getY()+YShiftBy));
+		}
+		for(HalfMapNode node: playersHalfMaps.get(secondMap).getMapNodes()) {
+			if(node.isFortPresent()) {
+				mapNodesSecondPlayer.add(new FullMapNode(node.getTerrain(),
+											EPlayerPositionState.MyPlayerPosition, 
+											ETreasureState.NoOrUnknownTreasureState, 
+											EFortState.MyFortPresent, 
 											node.getX()+XShiftBy, 
 											node.getY()+YShiftBy));
 			} else {
-				mapNodes.add(new FullMapNode(node.getTerrain(),
+				mapNodesSecondPlayer.add(new FullMapNode(node.getTerrain(),
 											EPlayerPositionState.NoPlayerPresent, 
 											ETreasureState.NoOrUnknownTreasureState, 
 											EFortState.NoOrUnknownFortState, 
@@ -70,13 +90,15 @@ public class FullMapCreator {
 			}
 		}
 		
+		fullMaps.put(playersHalfMaps.get(firstMap).getUniquePlayerID(), new FullMap(mapNodesFirstPlayer));
+		fullMaps.put(playersHalfMaps.get(secondMap).getUniquePlayerID(), new FullMap(mapNodesSecondPlayer));
 		/*System.out.println("--------------");
 		for(FullMapNode node: mapNodes) {
 			System.out.println(node.toString());
 		}
 		System.out.println("--------------");*/
 		
-		return new AbstractMap.SimpleEntry<FullMap, String>(new FullMap(mapNodes), playersHalfMaps.get(firstMap).getUniquePlayerID());
+		return fullMaps;
 	}
 
 }
