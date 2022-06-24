@@ -26,17 +26,24 @@ import MessagesBase.MessagesFromClient.ERequestState;
 import MessagesBase.MessagesFromClient.HalfMap;
 import MessagesBase.MessagesFromClient.PlayerRegistration;
 import MessagesBase.MessagesFromServer.EPlayerGameState;
+import MessagesBase.MessagesFromServer.GameState;
 import MessagesBase.MessagesFromServer.PlayerState;
 import game.Game;
 import game.GameRules;
 import game.IDCheck;
 import game.IDCreator;
 import map.HalfMapRules;
+import server.exceptions.FieldTypeException;
 import server.exceptions.GameIdException;
 import server.exceptions.GenericExampleException;
+import server.exceptions.HalfMapCastleException;
+import server.exceptions.IslandException;
+import server.exceptions.NumberOfFieldsException;
 import server.exceptions.NumberOfPlayersException;
 import server.exceptions.PlayerIdException;
+import server.exceptions.TurnBasedException;
 import server.exceptions.UniquePlayerIdException;
+import server.exceptions.WaterBordersException;
 
 @RestController
 @RequestMapping(value = "/games")
@@ -75,6 +82,7 @@ public class ServerEndpoints {
 		
 		try {
 			IDCheck.checkGameID(gamesList.keySet(), gameID.getUniqueGameID());
+			GameRules.checkNumberOfPlayers(gamesList.get(gameID.getUniqueGameID()));
 			PlayerState newPlayer = new PlayerState(playerRegistration.getStudentFirstName(),
 					playerRegistration.getStudentLastName(),
 					playerRegistration.getStudentUAccount(),
@@ -82,9 +90,7 @@ public class ServerEndpoints {
 					newPlayerID,
 					false);
 			gamesList.get(gameID.getUniqueGameID()).addPlayer(newPlayer);
-		} catch(GameIdException e) {
-			throw new GenericExampleException(e.getErrorName(), e.getLocalizedMessage());
-		} catch(NumberOfPlayersException e) {
+		} catch(GenericExampleException e) {
 			throw new GenericExampleException(e.getErrorName(), e.getLocalizedMessage());
 		}
 		
@@ -107,7 +113,25 @@ public class ServerEndpoints {
 				GameRules.checkTimeRule(currentGame.getLastTurnTime());
 			}
 			
-			gamesList.get(gameID.getUniqueGameID()).addHalfMap(halfMap);
+			currentGame.addHalfMap(halfMap);
+		} catch(TurnBasedException e) {
+			gamesList.get(gameID.getUniqueGameID()).setEndGame(halfMap.getUniquePlayerID());
+			throw new GenericExampleException(e.getErrorName(), e.getLocalizedMessage());
+		} catch(FieldTypeException e) {
+			gamesList.get(gameID.getUniqueGameID()).setEndGame(halfMap.getUniquePlayerID());
+			throw new GenericExampleException(e.getErrorName(), e.getLocalizedMessage());
+		} catch(HalfMapCastleException e) {
+			gamesList.get(gameID.getUniqueGameID()).setEndGame(halfMap.getUniquePlayerID());
+			throw new GenericExampleException(e.getErrorName(), e.getLocalizedMessage());
+		} catch(NumberOfFieldsException e) {
+			gamesList.get(gameID.getUniqueGameID()).setEndGame(halfMap.getUniquePlayerID());
+			throw new GenericExampleException(e.getErrorName(), e.getLocalizedMessage());
+		} catch(WaterBordersException e) {
+			gamesList.get(gameID.getUniqueGameID()).setEndGame(halfMap.getUniquePlayerID());
+			throw new GenericExampleException(e.getErrorName(), e.getLocalizedMessage());
+		} catch(IslandException e) {
+			gamesList.get(gameID.getUniqueGameID()).setEndGame(halfMap.getUniquePlayerID());
+			throw new GenericExampleException(e.getErrorName(), e.getLocalizedMessage());
 		} catch(GenericExampleException e) {
 			throw new GenericExampleException(e.getErrorName(), e.getLocalizedMessage());
 		}
@@ -115,6 +139,29 @@ public class ServerEndpoints {
 		return new ResponseEnvelope<>();
 	}
 
+	//GameState
+	@RequestMapping(value = "/{gameID}/states/{playerID}", method = RequestMethod.GET, produces = MediaType.APPLICATION_XML_VALUE)
+	public @ResponseBody ResponseEnvelope<GameState> sendGameState(
+			@Validated @PathVariable UniqueGameIdentifier gameID,
+			@Validated @PathVariable UniquePlayerIdentifier playerID) {
+
+		try {
+			Game currentGame = gamesList.get(gameID.getUniqueGameID());
+			IDCheck.checkGameID(gamesList.keySet(), gameID.getUniqueGameID());
+			IDCheck.checkPlayerID(currentGame, playerID.getUniquePlayerID());
+			GameRules.checkNumberOfTurns(currentGame.getCurrentTurn());
+			if(currentGame.getLastTurnTime()!=null) {
+				GameRules.checkTimeRule(currentGame.getLastTurnTime());
+			}
+			
+			GameState gameState = currentGame.getGameState(playerID);
+			ResponseEnvelope<GameState> result = new ResponseEnvelope<GameState>(gameState); 
+
+			return result;
+		} catch(GenericExampleException e) {
+			throw new GenericExampleException(e.getErrorName(), e.getLocalizedMessage());
+		}
+	}
 	/*
 	 * Note, this is only the most basic way of handling exceptions in spring (but
 	 * sufficient for our task) it would, for example struggle if you use multiple
