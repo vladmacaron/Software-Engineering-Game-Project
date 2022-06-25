@@ -1,6 +1,5 @@
 package map;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -9,9 +8,7 @@ import MessagesBase.MessagesFromClient.ETerrain;
 import MessagesBase.MessagesFromClient.HalfMap;
 import MessagesBase.MessagesFromClient.HalfMapNode;
 import server.exceptions.FieldTypeException;
-import server.exceptions.GenericExampleException;
 import server.exceptions.HalfMapCastleException;
-import server.exceptions.HalfMapException;
 import server.exceptions.IslandException;
 import server.exceptions.NumberOfFieldsException;
 import server.exceptions.WaterBordersException;
@@ -25,7 +22,7 @@ public class HalfMapRules {
 		checkIsland(halfMap);
 	}
 	
-	private static void checkFieldsType(HalfMap halfMap) throws FieldTypeException {
+	private static void checkFieldsType(HalfMap halfMap) {
 		int countWaterFields = 0;
 		int countMountainFields = 0;
 		int countGrassFields = 0; 
@@ -55,7 +52,7 @@ public class HalfMapRules {
 		}
 	}
 	
-	private static void checkCastle(HalfMap halfMap) throws HalfMapCastleException {
+	private static void checkCastle(HalfMap halfMap) {
 		int countCastle = 0;
 		for(HalfMapNode node: halfMap.getMapNodes()) {
 			if(node.isFortPresent()) {
@@ -70,7 +67,7 @@ public class HalfMapRules {
 		}
 	}
 	
-	private static void checkNumberOfFields(HalfMap halfMap) throws NumberOfFieldsException {
+	private static void checkNumberOfFields(HalfMap halfMap) {
 		Set<HalfMapNode> nodes = new HashSet<>(halfMap.getMapNodes());
 		if(nodes.size()!=32) {
 			throw new NumberOfFieldsException("Number of fields check", "Map does not contain 32 fields");
@@ -85,7 +82,7 @@ public class HalfMapRules {
 		}
 	}
 	
-	private static void checkBorders(HalfMap halfMap) throws WaterBordersException {
+	private static void checkBorders(HalfMap halfMap) {
 		int shortLeftSide = 0;
 		int shortRightSide = 0;
 		int longUpperSide = 0;
@@ -112,7 +109,7 @@ public class HalfMapRules {
 		}
 	}
 	
-	private static void checkIsland(HalfMap halfMap) throws IslandException {
+	private static void checkIsland(HalfMap halfMap) {
 		HalfMapNode startingNode = new HalfMapNode();
 		for(HalfMapNode node: halfMap.getMapNodes()) {
 			if(!node.getTerrain().equals(ETerrain.Water)) {
