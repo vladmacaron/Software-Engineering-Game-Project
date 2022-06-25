@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Build-Timestamp: 2022-06-25T12:47:30.198+0200
+Created-By: Gradle 7.3
+Build-Jdk: 17.0.2 (Eclipse Adoptium 17.0.2+8)
+Built-By: vladislav
+Build-OS: Mac OS X x86_64 12.4
+Main-Class: org.springframework.boot.loader.JarLauncher
+Start-Class: server.main.MainServer
+Spring-Boot-Version: 2.5.5
+Spring-Boot-Classes: BOOT-INF/classes/
+Spring-Boot-Lib: BOOT-INF/lib/
+Spring-Boot-Classpath-Index: BOOT-INF/classpath.idx
+Spring-Boot-Layers-Index: BOOT-INF/layers.idx
+
