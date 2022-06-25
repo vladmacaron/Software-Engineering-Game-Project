@@ -31,6 +31,7 @@ public class Game {
 	private List<PlayerState> players;
 	private List<HalfMap> playersHalfMaps;
 	private Map<String, FullMap> fullMap;
+	//private Map<String, FullMapNode> treasureLocations;
 	private int currentTurn;
 	private LocalTime lastTurnTime;
 	private String currentPlayerID;
@@ -118,6 +119,7 @@ public class Game {
 		
 		if(playersHalfMaps.size() == 2) {
 			fullMap = FullMapCreator.createFullMap(playersHalfMaps);
+			//add treasure location here
 		}
 		
 		lastTurnTime = LocalTime.now();
