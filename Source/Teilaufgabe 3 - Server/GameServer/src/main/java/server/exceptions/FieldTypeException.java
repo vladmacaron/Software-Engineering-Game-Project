@@ -1,6 +1,6 @@
 package server.exceptions;
 
-public class FieldTypeException extends GenericExampleException {
+public class FieldTypeException extends HalfMapException {
 
 	private static final long serialVersionUID = 1L;
 

@@ -2,7 +2,6 @@ package server.main;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -22,7 +21,6 @@ import org.springframework.web.bind.annotation.RestController;
 import MessagesBase.ResponseEnvelope;
 import MessagesBase.UniqueGameIdentifier;
 import MessagesBase.UniquePlayerIdentifier;
-import MessagesBase.MessagesFromClient.ERequestState;
 import MessagesBase.MessagesFromClient.HalfMap;
 import MessagesBase.MessagesFromClient.PlayerRegistration;
 import MessagesBase.MessagesFromServer.EPlayerGameState;
@@ -33,22 +31,14 @@ import game.GameRules;
 import game.IDCheck;
 import game.IDCreator;
 import map.HalfMapRules;
-import server.exceptions.FieldTypeException;
-import server.exceptions.GameIdException;
 import server.exceptions.GenericExampleException;
-import server.exceptions.HalfMapCastleException;
-import server.exceptions.IslandException;
-import server.exceptions.NumberOfFieldsException;
-import server.exceptions.NumberOfPlayersException;
-import server.exceptions.PlayerIdException;
-import server.exceptions.TurnBasedException;
-import server.exceptions.UniquePlayerIdException;
-import server.exceptions.WaterBordersException;
+import server.exceptions.HalfMapException;
 
 @RestController
 @RequestMapping(value = "/games")
 public class ServerEndpoints {
 	
+	//idea and implementation taken from https://self-learning-java-tutorial.blogspot.com/2021/10/java-remove-oldest-entry-from-map.html
 	private HashMap<String, Game> gamesList = new LinkedHashMap<String, Game>() {
 		private static final long serialVersionUID = 1L;
 		
@@ -98,7 +88,7 @@ public class ServerEndpoints {
 		return playerIDMessage;
 	}
 	
-	// receive player HalfMap
+	// player HalfMap
 	@RequestMapping(value = "/{gameID}/halfmaps", method = RequestMethod.POST, consumes = MediaType.APPLICATION_XML_VALUE, produces = MediaType.APPLICATION_XML_VALUE)
 	public @ResponseBody ResponseEnvelope<?> receiveHalfMap(
 			@Validated @PathVariable UniqueGameIdentifier gameID,
@@ -110,27 +100,14 @@ public class ServerEndpoints {
 			IDCheck.checkPlayerID(currentGame, halfMap.getUniquePlayerID());
 			HalfMapRules.checkHalfMap(halfMap);
 			GameRules.checkBothPlayersAreRegistered(currentGame);
+			GameRules.checkNumberOfHalfMaps(currentGame);
+			GameRules.checkTurn(currentGame, halfMap.getUniquePlayerID());
 			if(currentGame.getLastTurnTime()!=null) {
 				GameRules.checkTimeRule(currentGame.getLastTurnTime());
 			}
 			
 			currentGame.addHalfMap(halfMap);
-		} catch(TurnBasedException e) {
-			gamesList.get(gameID.getUniqueGameID()).setEndGame(halfMap.getUniquePlayerID());
-			throw new GenericExampleException(e.getErrorName(), e.getLocalizedMessage());
-		} catch(FieldTypeException e) {
-			gamesList.get(gameID.getUniqueGameID()).setEndGame(halfMap.getUniquePlayerID());
-			throw new GenericExampleException(e.getErrorName(), e.getLocalizedMessage());
-		} catch(HalfMapCastleException e) {
-			gamesList.get(gameID.getUniqueGameID()).setEndGame(halfMap.getUniquePlayerID());
-			throw new GenericExampleException(e.getErrorName(), e.getLocalizedMessage());
-		} catch(NumberOfFieldsException e) {
-			gamesList.get(gameID.getUniqueGameID()).setEndGame(halfMap.getUniquePlayerID());
-			throw new GenericExampleException(e.getErrorName(), e.getLocalizedMessage());
-		} catch(WaterBordersException e) {
-			gamesList.get(gameID.getUniqueGameID()).setEndGame(halfMap.getUniquePlayerID());
-			throw new GenericExampleException(e.getErrorName(), e.getLocalizedMessage());
-		} catch(IslandException e) {
+		} catch(HalfMapException e) {
 			gamesList.get(gameID.getUniqueGameID()).setEndGame(halfMap.getUniquePlayerID());
 			throw new GenericExampleException(e.getErrorName(), e.getLocalizedMessage());
 		} catch(GenericExampleException e) {
@@ -140,7 +117,7 @@ public class ServerEndpoints {
 		return new ResponseEnvelope<>();
 	}
 
-	//GameState
+	// GameState
 	@RequestMapping(value = "/{gameID}/states/{playerID}", method = RequestMethod.GET, produces = MediaType.APPLICATION_XML_VALUE)
 	public @ResponseBody ResponseEnvelope<GameState> sendGameState(
 			@Validated @PathVariable UniqueGameIdentifier gameID,
@@ -163,19 +140,8 @@ public class ServerEndpoints {
 			throw new GenericExampleException(e.getErrorName(), e.getLocalizedMessage());
 		}
 	}
-	/*
-	 * Note, this is only the most basic way of handling exceptions in spring (but
-	 * sufficient for our task) it would, for example struggle if you use multiple
-	 * controllers. Add the exception types to the @ExceptionHandler which your
-	 * exception handling should support the superclass catches subclasses aspect
-	 * of try/catch also applies here. Hence, we recommend to simply extend your own
-	 * Exceptions from the GenericExampleException. For larger projects, one would
-	 * most likely want to use the HandlerExceptionResolver; see here
-	 * https://www.baeldung.com/exception-handling-for-rest-with-spring
-	 * 
-	 * Ask yourself: Why is handling the exceptions in a different method than the
-	 * endpoint methods a good solution?
-	 */
+	
+	// Exception handling
 	@ExceptionHandler({ GenericExampleException.class })
 	public @ResponseBody ResponseEnvelope<?> handleException(GenericExampleException ex, HttpServletResponse response) {
 		ResponseEnvelope<?> result = new ResponseEnvelope<>(ex.getErrorName(), ex.getMessage());

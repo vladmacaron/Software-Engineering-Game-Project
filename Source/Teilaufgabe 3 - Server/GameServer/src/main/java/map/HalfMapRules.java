@@ -11,12 +11,13 @@ import MessagesBase.MessagesFromClient.HalfMapNode;
 import server.exceptions.FieldTypeException;
 import server.exceptions.GenericExampleException;
 import server.exceptions.HalfMapCastleException;
+import server.exceptions.HalfMapException;
 import server.exceptions.IslandException;
 import server.exceptions.NumberOfFieldsException;
 import server.exceptions.WaterBordersException;
 
 public class HalfMapRules {
-	public static void checkHalfMap(HalfMap halfMap) throws GenericExampleException {
+	public static void checkHalfMap(HalfMap halfMap) {
 		checkFieldsType(halfMap);
 		checkCastle(halfMap);
 		checkNumberOfFields(halfMap);

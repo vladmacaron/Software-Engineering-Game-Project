@@ -1,7 +1,6 @@
 package game;
 
 import java.time.LocalTime;
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -16,21 +15,14 @@ import MessagesBase.UniqueGameIdentifier;
 import MessagesBase.UniquePlayerIdentifier;
 import MessagesBase.MessagesFromClient.ETerrain;
 import MessagesBase.MessagesFromClient.HalfMap;
-import MessagesBase.MessagesFromServer.EFortState;
 import MessagesBase.MessagesFromServer.EPlayerGameState;
 import MessagesBase.MessagesFromServer.EPlayerPositionState;
-import MessagesBase.MessagesFromServer.ETreasureState;
 import MessagesBase.MessagesFromServer.FullMap;
 import MessagesBase.MessagesFromServer.FullMapNode;
 import MessagesBase.MessagesFromServer.GameState;
 import MessagesBase.MessagesFromServer.PlayerState;
 import map.FullMapCreator;
-import map.HalfMapRules;
-import server.exceptions.GenericExampleException;
 import server.exceptions.NumberOfHalfMapsException;
-import server.exceptions.NumberOfPlayersException;
-import server.exceptions.NumberOfTurnsException;
-import server.exceptions.TurnBasedException;
 import server.exceptions.UniquePlayerIdException;
 
 public class Game {
@@ -58,6 +50,10 @@ public class Game {
 		return players;
 	}
 	
+	public List<HalfMap> getPlayersHalfMaps() {
+		return playersHalfMaps;
+	}
+	
 	public LocalTime getLastTurnTime() {
 		return lastTurnTime;
 	}
@@ -65,17 +61,20 @@ public class Game {
 	public int getCurrentTurn() {
 		return currentTurn;
 	}
+	
+	public String getCurrentPlayerID() {
+		return currentPlayerID;
+	}
  	
 	public void addPlayer(PlayerState player) {
 		if(players.contains(player)) {
 			throw new UniquePlayerIdException("Unique PlayerID check", "This player is already registered for the game");
 		}
+		
 		players.add(player);
-		currentTurn++;
 		gameStateID = gameStateID+1;
 		
 		if(players.size()==2 && currentPlayerID.isBlank()) {
-			System.out.println("add Player");
 			List<PlayerState> tempPlayers = new ArrayList<>();
 			int firstPlayerIndex = new Random().nextInt(2);
 			int secondPlayerIndex = 0;
@@ -102,35 +101,23 @@ public class Game {
 	}
 	
 	public void addHalfMap(HalfMap halfMap) {
-		if(playersHalfMaps.size() == 2) {
-			throw new NumberOfHalfMapsException("Number of HalfMaps check", "Game already received 2 HalfMaps");
-		}
 		for(HalfMap checkHalfMap: playersHalfMaps) {
 			if(checkHalfMap.getUniquePlayerID().equals(halfMap.getUniquePlayerID())) {
 				setEndGame(halfMap.getUniquePlayerID());
-				System.out.println("CHECK " + gameID);
 				throw new NumberOfHalfMapsException("Number of HalfMaps check", "Player cannot send HalfMap more than 1 time");
 			}
-		}
-		if(!currentPlayerID.equals(halfMap.getUniquePlayerID())) {
-			setEndGame(halfMap.getUniquePlayerID());
-			throw new TurnBasedException("Turn Based check", "This is not your turn");
 		}
 		
 		playersHalfMaps.add(halfMap);
 		
-		System.out.println("GameID: " + gameID + " PlayerID: " + currentPlayerID);
-		System.out.println(playersHalfMaps.size());
-		
 		changeCurrentPlayerID();
 		switchPlayers();
 		
-		currentTurn++;
+		//currentTurn++;
 		gameStateID = gameStateID+1;
 		
 		if(playersHalfMaps.size() == 2) {
 			fullMap = FullMapCreator.createFullMap(playersHalfMaps);
-			//currentPlayerID = fullMapAndPlayerIDPair.getValue();
 		}
 		
 		lastTurnTime = LocalTime.now();
@@ -150,8 +137,6 @@ public class Game {
 			return new GameState(gameStateID);
 		}
 		if(players.size()<=2 && playersHalfMaps.size()<2) {
-			System.out.println("Check " + currentPlayerID);
-			//return new GameState(players, gameStateID);
 			return new GameState(hidePlayerID(playerID.getUniquePlayerID()), gameStateID);
 		}
 		
@@ -205,7 +190,6 @@ public class Game {
 		players = tempPlayers;
 	}
 	
-	//change
 	private void switchPlayers() {
 		List<PlayerState> tempPlayers = new ArrayList<>();
 		PlayerState currentPlayer = getPlayerState(currentPlayerID);
@@ -215,7 +199,6 @@ public class Game {
 										EPlayerGameState.MustAct,
 										new UniquePlayerIdentifier(currentPlayer.getUniquePlayerID()),
 										currentPlayer.hasCollectedTreasure()));
-		System.out.println("PlayerID must act: " + currentPlayer.getUniquePlayerID());
 		PlayerState anotherPlayer = new PlayerState();
 		for(PlayerState player: players) {
 			if(!player.getUniquePlayerID().equals(currentPlayer.getUniquePlayerID())) {
@@ -229,7 +212,6 @@ public class Game {
 										EPlayerGameState.MustWait,
 										new UniquePlayerIdentifier(anotherPlayer.getUniquePlayerID()),
 										anotherPlayer.hasCollectedTreasure()));
-		System.out.println("PlayerID must wait: " + anotherPlayer.getUniquePlayerID());
 		players = tempPlayers;
 	}
 	

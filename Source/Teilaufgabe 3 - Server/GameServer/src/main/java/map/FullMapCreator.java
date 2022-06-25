@@ -1,6 +1,5 @@
 package map;
 
-import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -32,6 +31,8 @@ public class FullMapCreator {
 		Set<FullMapNode> mapNodesFirstPlayer = new HashSet<>();
 		Set<FullMapNode> mapNodesSecondPlayer = new HashSet<>();
 		
+		//populating map nodes for both players, visibility of certain fields will be limited this way
+		// i.e. castle not visible for the second player
 		for(HalfMapNode node: playersHalfMaps.get(firstMap).getMapNodes()) {
 			if(node.isFortPresent()) {
 				mapNodesFirstPlayer.add(new FullMapNode(node.getTerrain(),
@@ -59,9 +60,9 @@ public class FullMapCreator {
 		}
 		
 		if(mapIsSquare) {
-			XShiftBy = 8;
-		} else {
 			YShiftBy = 4;
+		} else {
+			XShiftBy = 8;
 		}
 		
 		for(HalfMapNode node: playersHalfMaps.get(secondMap).getMapNodes()) {
@@ -92,13 +93,7 @@ public class FullMapCreator {
 		
 		fullMaps.put(playersHalfMaps.get(firstMap).getUniquePlayerID(), new FullMap(mapNodesFirstPlayer));
 		fullMaps.put(playersHalfMaps.get(secondMap).getUniquePlayerID(), new FullMap(mapNodesSecondPlayer));
-		/*System.out.println("--------------");
-		for(FullMapNode node: mapNodes) {
-			System.out.println(node.toString());
-		}
-		System.out.println("--------------");*/
 		
 		return fullMaps;
 	}
-
 }
