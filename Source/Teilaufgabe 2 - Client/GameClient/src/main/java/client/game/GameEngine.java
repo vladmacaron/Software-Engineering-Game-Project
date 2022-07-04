@@ -39,8 +39,9 @@ public class GameEngine {
 		this.gameMap = gameMap;
 		this.args = args;
 		
-		this.serverBaseUrl = "http://swe1.wst.univie.ac.at";
-		this.gameID = "VEhDK";
+		//removed hardcoded university server url for security reasons
+		this.serverBaseUrl = "";
+		this.gameID = "";
 		
 		if(args.length==3) {
 			this.serverBaseUrl = args[1];
